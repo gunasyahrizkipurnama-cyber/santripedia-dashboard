@@ -1,6 +1,6 @@
-# SANTRIPEDIA Dashboard
+# FOR SANTRI Dashboard
 
-Prototipe dashboard web untuk meninjau jumlah santri menurut provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan.
+Prototipe dashboard web FOR SANTRI untuk meninjau jumlah santri menurut provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan.
 
 ## Membuka dashboard
 
@@ -16,7 +16,7 @@ Dashboard menghitung dan menampilkan data di browser. File impor tidak dikirim k
 - Ringkasan jumlah santri dan jumlah wilayah di data terpilih.
 - Grafik dan tabel wilayah yang bisa dipakai untuk menelusuri tingkat berikutnya.
 - Ekspor ringkasan wilayah sebagai CSV.
-- Data contoh yang menunjukkan Jawa Barat 40.000 santri, Kota Bandung 17.000, Kecamatan Cicendo 5.000, dan Kelurahan Sukaraja 1.000.
+- Logo FOR SANTRI dan data contoh yang menunjukkan Jawa Barat 40.000 santri, Kota Bandung 17.000, Kecamatan Cicendo 5.000, dan Kelurahan Sukaraja 1.000.
 
 Template Excel tersedia sebagai `Template_Impor_Data_Awal_SANTRIPEDIA.xlsx` di folder ini.
 

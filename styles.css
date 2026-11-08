@@ -28,9 +28,8 @@ a { color: inherit; text-decoration: none; }
 .app-shell { min-height: 100vh; }
 .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 20; width: 250px; padding: 26px 17px 16px; background: #fff; border-right: 1px solid #edf0ee; display: flex; flex-direction: column; }
 .brand { display: flex; align-items: center; gap: 11px; padding: 0 9px 30px; }
-.brand-mark { width: 35px; height: 35px; border-radius: 11px; background: #14876a; display: grid; grid-template-columns: repeat(2, 7px); grid-template-rows: repeat(2, 7px); place-content: center; gap: 3px; box-shadow: 0 5px 10px rgba(20, 135, 106, .16); }
-.brand-mark span { display: block; border-radius: 2px; background: #fff; }
-.brand-mark span:nth-child(2), .brand-mark span:nth-child(3) { opacity: .72; }
+.brand-mark { width: 38px; height: 38px; overflow: hidden; border: 1px solid #e7eee9; border-radius: 10px; background: #fafcfa; display: grid; place-items: center; box-shadow: 0 4px 10px rgba(20, 135, 106, .08); flex: 0 0 auto; }
+.brand-mark img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .brand-copy { display: flex; flex-direction: column; line-height: 1.1; }
 .brand-copy strong { font: 800 15px/1.1 Manrope, sans-serif; letter-spacing: .04em; color: #173a30; }
 .brand-copy small { margin-top: 5px; font-size: 7px; letter-spacing: .16em; font-weight: 700; color: #91a099; }
@@ -230,7 +229,7 @@ tbody tr:last-child td { border-bottom: 0; }
 .info-modal { position: relative; width: min(440px, 100%); padding: 30px; border: 1px solid #e7eeea; border-radius: 15px; background: #fff; box-shadow: 0 22px 70px rgba(24, 43, 33, .2); }
 .modal-close { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; }
 .modal-mark { width: 43px; height: 43px; display: grid; place-items: center; margin-bottom: 19px; border-radius: 12px; background: #eaf5f0; }
-.modal-mark .brand-mark { width: 30px; height: 30px; border-radius: 9px; transform: scale(.84); }
+.modal-mark .brand-mark { width: 42px; height: 42px; border-radius: 10px; }
 .info-modal h2 { margin-top: 9px; font: 800 21px/1.25 Manrope, sans-serif; letter-spacing: -.04em; }
 .info-modal > p { margin-top: 9px; color: #7b8981; font-size: 11px; line-height: 1.7; }
 .modal-local-note { margin-top: 17px; padding: 11px; display: flex; align-items: flex-start; gap: 9px; border-radius: 8px; background: #f3f8f5; color: #5e796b; font-size: 9px; line-height: 1.5; }

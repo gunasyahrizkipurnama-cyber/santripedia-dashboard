@@ -1,4 +1,4 @@
-/* SANTRIPEDIA dashboard preview. Imported workbooks are read locally in the browser. */
+/* FOR SANTRI dashboard preview. Imported workbooks are read locally in the browser. */
 const demoRecords = [
   { id: 'DEMO-0001', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Sukaraja', villageType: 'Kelurahan', count: 1000 },
   { id: 'DEMO-0002', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Arjuna', villageType: 'Kelurahan', count: 1000 },
@@ -358,7 +358,7 @@ async function parseXlsx(file) {
     return result;
   });
   const headerIndex = parsedRows.findIndex((row) => row.includes('ID Santri') && row.includes('Provinsi'));
-  if (headerIndex < 0) throw new Error('Header ID Santri dan Provinsi tidak ditemukan. Gunakan template SANTRIPEDIA.');
+  if (headerIndex < 0) throw new Error('Header ID Santri dan Provinsi tidak ditemukan. Gunakan template Excel yang disertakan.');
   const headers = parsedRows[headerIndex];
   return parsedRows.slice(headerIndex + 1).map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ''])));
 }
@@ -430,7 +430,7 @@ function exportSummary() {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = `santripedia-ringkasan-${new Date().toISOString().slice(0, 10)}.csv`;
+  anchor.download = `for-santri-ringkasan-${new Date().toISOString().slice(0, 10)}.csv`;
   anchor.click();
   URL.revokeObjectURL(url);
   toast('Ringkasan wilayah berhasil diekspor sebagai CSV.');
