@@ -106,6 +106,7 @@ h1 span { color: #16866a; }
 .filter-field { min-width: 0; display: grid; gap: 5px; color: #89958e; font-size: 8px; font-weight: 600; }
 .filter-field select { width: 100%; height: 32px; padding: 0 27px 0 9px; appearance: none; border: 1px solid #e7ece9; border-radius: 6px; outline: 0; background: #fbfcfb url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%2398A49D' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 9px center; color: #4b5e54; font-size: 9px; font-weight: 600; text-overflow: ellipsis; cursor: pointer; }
 .filter-field select:focus { border-color: #68b89a; box-shadow: 0 0 0 3px rgba(57,156,119,.1); }
+.filter-field select:disabled { color: #aab4ae; background-color: #f4f7f5; cursor: not-allowed; }
 .reset-button { width: 31px; height: 32px; margin-bottom: 0; display: grid; place-items: center; border: 1px solid #e7ece9; border-radius: 6px; background: #fff; color: #8c9992; cursor: pointer; }
 .reset-button .icon { width: 14px; height: 14px; }
 .reset-button:hover { border-color: #bddbce; color: #298061; }
@@ -158,6 +159,7 @@ h1 span { color: #16866a; }
 .pie-svg { display: block; width: 100%; height: 100%; }
 .pie-segment { stroke: #fff; stroke-width: 2; stroke-linejoin: round; transition: opacity .16s ease; }
 .pie-segment:hover { opacity: .8; }
+.pie-empty-ring { fill: none; stroke: #e8efeb; stroke-width: 24; }
 .pie-legend { min-width: 0; max-height: 184px; overflow-y: auto; display: grid; align-content: center; gap: 3px; padding-right: 3px; }
 .pie-legend-row { min-width: 0; min-height: 22px; padding: 2px 5px; display: grid; grid-template-columns: 8px minmax(0, 1fr) 48px 40px; align-items: center; gap: 7px; border: 0; border-radius: 5px; background: transparent; text-align: left; font: inherit; }
 button.pie-legend-row { width: 100%; cursor: pointer; }
@@ -168,10 +170,14 @@ button.pie-legend-row:hover { background: #f1f8f4; }
 .pie-legend-count { color: #52665b; text-align: right; font-size: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .pie-legend-share { min-width: 36px; color: #24805d; text-align: right; font-size: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .chart-empty { grid-column: 1 / -1; padding: 30px 10px; color: #8f9b94; text-align: center; font-size: 10px; }
+.pie-empty-note { margin: 8px 4px 0; color: #98a39d; font-size: 8px; line-height: 1.5; text-align: center; }
 .chart-footer { margin-top: 8px; padding-top: 9px; border-top: 1px solid #f0f3f1; display: flex; align-items: center; justify-content: space-between; color: #9aa49f; font-size: 8px; }
 .text-button { border: 0; padding: 3px 0; color: #398368; background: none; font-size: 9px; font-weight: 700; cursor: pointer; }
 .text-button span { margin-left: 4px; font-size: 14px; vertical-align: -1px; }
 .text-button:hover { color: #0e684d; }
+.load-more-button { white-space: nowrap; }
+.source-note a { color: #267a5c; font-weight: 700; text-decoration: none; }
+.source-note a:hover { text-decoration: underline; }
 .hierarchy-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; background: #f0f7f3; color: #4e9b7b; }
 .hierarchy-icon .icon { width: 16px; height: 16px; }
 .hierarchy-list { position: relative; margin: 21px 0 15px 9px; padding-left: 18px; border-left: 1px solid #dcebe3; display: grid; gap: 12px; }

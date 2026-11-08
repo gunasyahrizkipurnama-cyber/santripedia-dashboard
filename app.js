@@ -1,51 +1,69 @@
-/* FOR SANTRI dashboard preview. Imported workbooks are read locally in the browser. */
-const demoRecords = [
-  { id: 'DEMO-0001', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Sukaraja', villageType: 'Kelurahan', count: 1000 },
-  { id: 'DEMO-0002', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Arjuna', villageType: 'Kelurahan', count: 1000 },
-  { id: 'DEMO-0003', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Pamoyanan', villageType: 'Kelurahan', count: 1000 },
-  { id: 'DEMO-0004', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Cicendo', village: 'Pasirkaliki', villageType: 'Kelurahan', count: 2000 },
-  { id: 'DEMO-0005', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Coblong', village: 'Dago', villageType: 'Kelurahan', count: 2500 },
-  { id: 'DEMO-0006', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Coblong', village: 'Lebak Gede', villageType: 'Kelurahan', count: 1500 },
-  { id: 'DEMO-0007', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Regol', village: 'Balonggede', villageType: 'Kelurahan', count: 4000 },
-  { id: 'DEMO-0008', province: 'Jawa Barat', city: 'Kota Bandung', district: 'Sumur Bandung', village: 'Merdeka', villageType: 'Kelurahan', count: 4000 },
-  { id: 'DEMO-0009', province: 'Jawa Barat', city: 'Kabupaten Bogor', district: 'Cibinong', village: 'Cibinong', villageType: 'Kelurahan', count: 5000 },
-  { id: 'DEMO-0010', province: 'Jawa Barat', city: 'Kabupaten Bogor', district: 'Ciawi', village: 'Ciawi', villageType: 'Desa', count: 4000 },
-  { id: 'DEMO-0011', province: 'Jawa Barat', city: 'Kota Bekasi', district: 'Bekasi Selatan', village: 'Pekayon Jaya', villageType: 'Kelurahan', count: 3200 },
-  { id: 'DEMO-0012', province: 'Jawa Barat', city: 'Kota Bekasi', district: 'Mustika Jaya', village: 'Mustikajaya', villageType: 'Kelurahan', count: 2800 },
-  { id: 'DEMO-0013', province: 'Jawa Barat', city: 'Kabupaten Garut', district: 'Tarogong Kidul', village: 'Sukagalih', villageType: 'Desa', count: 2000 },
-  { id: 'DEMO-0014', province: 'Jawa Barat', city: 'Kabupaten Garut', district: 'Wanaraja', village: 'Wanaraja', villageType: 'Desa', count: 2000 },
-  { id: 'DEMO-0015', province: 'Jawa Barat', city: 'Kabupaten Cirebon', district: 'Sumber', village: 'Sumber', villageType: 'Kelurahan', count: 2200 },
-  { id: 'DEMO-0016', province: 'Jawa Barat', city: 'Kabupaten Cirebon', district: 'Kedawung', village: 'Kedawung', villageType: 'Desa', count: 1800 },
-  { id: 'DEMO-0017', province: 'Banten', city: 'Kota Tangerang', district: 'Cipondoh', village: 'Cipondoh', villageType: 'Kelurahan', count: 4000 },
-  { id: 'DEMO-0018', province: 'Banten', city: 'Kota Tangerang', district: 'Tangerang', village: 'Sukarasa', villageType: 'Kelurahan', count: 3000 },
-  { id: 'DEMO-0019', province: 'Banten', city: 'Kota Tangerang Selatan', district: 'Pamulang', village: 'Pamulang Barat', villageType: 'Kelurahan', count: 3000 },
-  { id: 'DEMO-0020', province: 'Banten', city: 'Kota Tangerang Selatan', district: 'Ciputat', village: 'Ciputat', villageType: 'Kelurahan', count: 2000 },
-  { id: 'DEMO-0021', province: 'Jawa Tengah', city: 'Kota Semarang', district: 'Tembalang', village: 'Tembalang', villageType: 'Kelurahan', count: 7000 },
-  { id: 'DEMO-0022', province: 'Jawa Tengah', city: 'Kota Semarang', district: 'Banyumanik', village: 'Padangsari', villageType: 'Kelurahan', count: 5000 },
-  { id: 'DEMO-0023', province: 'Jawa Tengah', city: 'Kota Surakarta', district: 'Banjarsari', village: 'Nusukan', villageType: 'Kelurahan', count: 6000 },
-  { id: 'DEMO-0024', province: 'Jawa Tengah', city: 'Kabupaten Banyumas', district: 'Purwokerto Selatan', village: 'Karangklesem', villageType: 'Kelurahan', count: 8000 },
-  { id: 'DEMO-0025', province: 'Jawa Timur', city: 'Kota Surabaya', district: 'Wonokromo', village: 'Darmo', villageType: 'Kelurahan', count: 10000 },
-  { id: 'DEMO-0026', province: 'Jawa Timur', city: 'Kota Surabaya', district: 'Sukolilo', village: 'Keputih', villageType: 'Kelurahan', count: 8000 },
-  { id: 'DEMO-0027', province: 'Jawa Timur', city: 'Kota Malang', district: 'Lowokwaru', village: 'Dinoyo', villageType: 'Kelurahan', count: 9000 },
-  { id: 'DEMO-0028', province: 'Jawa Timur', city: 'Kabupaten Jember', district: 'Kaliwates', village: 'Kepatihan', villageType: 'Kelurahan', count: 7000 },
-  { id: 'DEMO-0029', province: 'DKI Jakarta', city: 'Kota Jakarta Selatan', district: 'Jagakarsa', village: 'Lenteng Agung', villageType: 'Kelurahan', count: 6000 },
-  { id: 'DEMO-0030', province: 'DKI Jakarta', city: 'Kota Jakarta Timur', district: 'Cakung', village: 'Penggilingan', villageType: 'Kelurahan', count: 5000 },
-  { id: 'DEMO-0031', province: 'DKI Jakarta', city: 'Kota Jakarta Barat', district: 'Kebon Jeruk', village: 'Kedoya Selatan', villageType: 'Kelurahan', count: 4000 },
-];
-
+/* FOR SANTRI dashboard. Territory data is bundled for offline use. */
 const fields = {
-  province: { select: 'provinceSelect', label: 'Provinsi', dataKey: 'province', placeholder: 'Semua Provinsi', chip: 'P' },
-  city: { select: 'citySelect', label: 'Kabupaten / Kota', dataKey: 'city', placeholder: 'Semua Kab/Kota', chip: 'K' },
-  district: { select: 'districtSelect', label: 'Kecamatan', dataKey: 'district', placeholder: 'Semua Kecamatan', chip: 'C' },
-  village: { select: 'villageSelect', label: 'Desa / Kelurahan', dataKey: 'village', placeholder: 'Semua Desa/Kelurahan', chip: 'D' },
+  province: { select: 'provinceSelect', label: 'Provinsi', placeholder: 'Semua Provinsi', chip: 'P' },
+  city: { select: 'citySelect', label: 'Kabupaten / Kota', placeholder: 'Pilih Kab/Kota', chip: 'K' },
+  district: { select: 'districtSelect', label: 'Kecamatan', placeholder: 'Pilih Kecamatan', chip: 'C' },
+  village: { select: 'villageSelect', label: 'Desa / Kelurahan', placeholder: 'Pilih Desa/Kelurahan', chip: 'D' },
 };
 const hierarchy = ['province', 'city', 'district', 'village'];
 const pieColors = ['#23845f', '#45a97b', '#8bc69a', '#d1a14d', '#6c91c4', '#9579b8', '#d17868', '#42a2a0', '#a9b64b', '#d08daf'];
-const state = { records: demoRecords, isDemo: true, chartExpanded: false, toastTimer: null, search: '' };
+const state = { records: [], isImported: false, chartExpanded: false, toastTimer: null, search: '', tableLimit: 100, totalStudents: 0 };
 const $ = (selector) => document.querySelector(selector);
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
 const normalizeText = (value) => String(value ?? '').trim();
-const uniqueSorted = (items) => [...new Set(items.map(normalizeText).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id'));
+const catalog = { province: [], city: [], district: [], village: [] };
+const catalogById = { province: new Map(), city: new Map(), district: new Map(), village: new Map() };
+const childrenByParent = { city: new Map(), district: new Map(), village: new Map() };
+const studentCounts = { province: new Map(), city: new Map(), district: new Map(), village: new Map() };
+const sourceData = window.WILAYAH_DATA;
+if (!sourceData) throw new Error('Data wilayah tidak ditemukan. Pastikan data/wilayah-data.js ikut disertakan.');
+sourceData.provinces.forEach(([id, name]) => catalog.province.push({ id, name, provinceId: id }));
+const citiesById = new Map(sourceData.regencies.map(([id, provinceId, name]) => [id, { id, name, provinceId }]));
+const districtsById = new Map(sourceData.districts.map(([id, cityId, name]) => [id, { id, name, cityId, provinceId: citiesById.get(cityId)?.provinceId || '' }]));
+catalog.city = [...citiesById.values()];
+catalog.district = [...districtsById.values()];
+catalog.village = sourceData.villages.map(([id, districtId, name]) => {
+  const district = districtsById.get(districtId);
+  return { id, name, districtId, cityId: district?.cityId || '', provinceId: district?.provinceId || '' };
+});
+hierarchy.forEach((level) => catalog[level].forEach((area) => catalogById[level].set(area.id, area)));
+catalog.city.forEach((area) => { if (!childrenByParent.city.has(area.provinceId)) childrenByParent.city.set(area.provinceId, []); childrenByParent.city.get(area.provinceId).push(area); });
+catalog.district.forEach((area) => { if (!childrenByParent.district.has(area.cityId)) childrenByParent.district.set(area.cityId, []); childrenByParent.district.get(area.cityId).push(area); });
+catalog.village.forEach((area) => { if (!childrenByParent.village.has(area.districtId)) childrenByParent.village.set(area.districtId, []); childrenByParent.village.get(area.districtId).push(area); });
+hierarchy.forEach((level) => catalog[level].sort((a, b) => a.name.localeCompare(b.name, 'id')));
+Object.values(childrenByParent).forEach((groups) => groups.forEach((areas) => areas.sort((a, b) => a.name.localeCompare(b.name, 'id'))));
+const regionName = (level, id) => catalogById[level].get(id)?.name || '';
+const nameIndexes = { province: new Map(), city: new Map(), district: new Map(), village: new Map() };
+function matchNameKey(level, value) {
+  let name = normalizeText(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('id');
+  name = name.replace(/\bKAB\.?\s+/g, 'KABUPATEN ').replace(/\bKEC\.?\s+/g, 'KECAMATAN ');
+  name = name.replace(/\bKOTA ADM\.?\s+/g, 'KOTA ADMINISTRASI ');
+  name = name.replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (level === 'district') name = name.replace(/^KECAMATAN\s+/, '');
+  if (level === 'village') name = name.replace(/^(KELURAHAN|DESA)\s+/, '');
+  if (level === 'province') {
+    if (name === 'DKI JAKARTA') name = 'DAERAH KHUSUS IBUKOTA JAKARTA';
+    if (name === 'DIY' || name === 'YOGYAKARTA') name = 'DAERAH ISTIMEWA YOGYAKARTA';
+  }
+  return name;
+}
+function addNameIndex(level, parentId, name, area) {
+  const key = `${parentId}|${matchNameKey(level, name)}`;
+  if (!nameIndexes[level].has(key)) nameIndexes[level].set(key, []);
+  if (area && !nameIndexes[level].get(key).includes(area)) nameIndexes[level].get(key).push(area);
+  const simpleName = matchNameKey(level, name).replace(/^(KABUPATEN|KOTA ADMINISTRASI|KOTA|KECAMATAN|KELURAHAN|DESA)\s+/, '');
+  if (simpleName) {
+    const simpleKey = `${parentId}|${simpleName}`;
+    if (!nameIndexes[level].has(simpleKey)) nameIndexes[level].set(simpleKey, []);
+    if (area && !nameIndexes[level].get(simpleKey).includes(area)) nameIndexes[level].get(simpleKey).push(area);
+  }
+}
+hierarchy.forEach((level) => catalog[level].forEach((area) => {
+  const parentId = level === 'province' ? '' : level === 'city' ? area.provinceId : level === 'district' ? area.cityId : area.districtId;
+  addNameIndex(level, parentId, area.name, area);
+}));
+addNameIndex('province', '', 'DKI Jakarta', catalog.province.find((area) => area.name === 'Daerah Khusus Ibukota Jakarta'));
+addNameIndex('province', '', 'DIY', catalog.province.find((area) => area.name === 'Daerah Istimewa Yogyakarta'));
 
 const provinceSelect = $('#provinceSelect');
 const citySelect = $('#citySelect');
@@ -57,50 +75,11 @@ function currentFilters() {
   return Object.fromEntries(hierarchy.map((key) => [key, filterSelects[key].value]));
 }
 
-function matchesFilters(record, filterValues = currentFilters()) {
-  return hierarchy.every((key) => !filterValues[key] || record[key] === filterValues[key]);
-}
-
-function filteredRecords() {
-  return state.records.filter((record) => matchesFilters(record));
-}
-
 function sumRecords(records) {
-  return records.reduce((total, record) => total + (Number(record.count) || 1), 0);
+  return records.reduce((total, record) => total + (Number(record.count) || 0), 0);
 }
 
-function groupRecords(records, key, parentKey) {
-  const groups = new Map();
-  records.forEach((record) => {
-    const name = normalizeText(record[key]);
-    if (!name) return;
-    if (!groups.has(name)) groups.set(name, { name, parent: normalizeText(record[parentKey]), count: 0, level: key });
-    groups.get(name).count += Number(record.count) || 1;
-  });
-  return [...groups.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'id'));
-}
-
-function updateSelect(select, placeholder, values, selected) {
-  select.replaceChildren(new Option(placeholder, ''));
-  values.forEach((value) => select.add(new Option(value, value)));
-  select.value = values.includes(selected) ? selected : '';
-}
-
-function updateFilterOptions() {
-  const filters = currentFilters();
-  updateSelect(provinceSelect, fields.province.placeholder, uniqueSorted(state.records.map((record) => record.province)), filters.province);
-  const province = provinceSelect.value;
-  const cityRows = state.records.filter((record) => !province || record.province === province);
-  updateSelect(citySelect, fields.city.placeholder, uniqueSorted(cityRows.map((record) => record.city)), filters.city);
-  const city = citySelect.value;
-  const districtRows = cityRows.filter((record) => !city || record.city === city);
-  updateSelect(districtSelect, fields.district.placeholder, uniqueSorted(districtRows.map((record) => record.district)), filters.district);
-  const district = districtSelect.value;
-  const villageRows = districtRows.filter((record) => !district || record.district === district);
-  updateSelect(villageSelect, fields.village.placeholder, uniqueSorted(villageRows.map((record) => record.village)), filters.village);
-}
-
-function activeLevel() {
+function selectedLevel() {
   const values = currentFilters();
   for (let index = hierarchy.length - 1; index >= 0; index -= 1) {
     if (values[hierarchy[index]]) return hierarchy[index];
@@ -108,23 +87,68 @@ function activeLevel() {
   return null;
 }
 
+function areaMatchesFilters(area, level, filters = currentFilters()) {
+  const ids = {
+    province: level === 'province' ? area.id : area.provinceId,
+    city: level === 'city' ? area.id : area.cityId,
+    district: level === 'district' ? area.id : area.districtId,
+    village: level === 'village' ? area.id : '',
+  };
+  return (!filters.province || ids.province === filters.province)
+    && (!filters.city || ids.city === filters.city)
+    && (!filters.district || ids.district === filters.district)
+    && (!filters.village || ids.village === filters.village);
+}
+
+function areasAtLevel(level, filters = currentFilters()) {
+  return catalog[level].filter((area) => areaMatchesFilters(area, level, filters));
+}
+
+function countFor(level, id) { return studentCounts[level].get(id) || 0; }
+
+function sumSelectedStudents(filters = currentFilters()) {
+  const level = selectedLevel();
+  if (level) return countFor(level, filters[level]);
+  return state.totalStudents;
+}
+
+function updateSelect(select, placeholder, areas, selected, disabled = false) {
+  select.replaceChildren(new Option(placeholder, ''));
+  areas.forEach((area) => select.add(new Option(area.name, area.id)));
+  select.disabled = disabled;
+  select.value = areas.some((area) => area.id === selected) ? selected : '';
+}
+
+function updateFilterOptions() {
+  const filters = currentFilters();
+  updateSelect(provinceSelect, fields.province.placeholder, catalog.province, filters.province);
+  const province = provinceSelect.value;
+  const cities = province ? childrenByParent.city.get(province) || [] : [];
+  updateSelect(citySelect, fields.city.placeholder, cities, filters.city, !province);
+  const city = citySelect.value;
+  const districts = city ? childrenByParent.district.get(city) || [] : [];
+  updateSelect(districtSelect, fields.district.placeholder, districts, filters.district, !city);
+  const district = districtSelect.value;
+  const villages = district ? childrenByParent.village.get(district) || [] : [];
+  updateSelect(villageSelect, fields.village.placeholder, villages, filters.village, !district);
+}
+
 function breakdownConfig() {
-  const selected = activeLevel();
-  if (!selected) return { key: 'province', parentKey: null, childLevel: 'province', title: 'Santri per Provinsi', tableTitle: 'Daftar Provinsi', parentTitle: 'Indonesia' };
+  const selected = selectedLevel();
+  if (!selected) return { childLevel: 'province', parentId: '', title: 'Jumlah santri per Provinsi', tableTitle: 'Daftar Provinsi', parentTitle: 'Indonesia' };
   const index = hierarchy.indexOf(selected);
-  if (index === hierarchy.length - 1) return { key: null, childLevel: null, title: 'Wilayah terpilih', tableTitle: 'Rincian wilayah', parentTitle: '' };
+  if (index === hierarchy.length - 1) return { childLevel: null, parentId: currentFilters()[selected], title: 'Wilayah terpilih', tableTitle: 'Rincian wilayah', parentTitle: '' };
   const childLevel = hierarchy[index + 1];
   return {
-    key: fields[childLevel].dataKey,
-    parentKey: fields[selected].dataKey,
     childLevel,
-    title: `Santri per ${fields[childLevel].label}`,
+    parentId: currentFilters()[selected],
+    title: `Jumlah santri per ${fields[childLevel].label}`,
     tableTitle: `Daftar ${fields[childLevel].label}`,
     parentTitle: filtersName(selected),
   };
 }
 
-function filtersName(level) { return filterSelects[level].selectedOptions[0]?.textContent || ''; }
+function filtersName(level) { return regionName(level, filterSelects[level].value); }
 
 function renderCrumbs() {
   const values = currentFilters();
@@ -136,7 +160,7 @@ function renderCrumbs() {
   }
   const crumbs = ['<span>Indonesia</span>'];
   chosen.forEach((key) => {
-    crumbs.push('<span class="crumb-sep">/</span>', `<strong>${escapeHtml(values[key])}</strong>`);
+    crumbs.push('<span class="crumb-sep">/</span>', `<strong>${escapeHtml(regionName(key, values[key]))}</strong>`);
   });
   crumbContainer.innerHTML = crumbs.join('');
 }
@@ -145,26 +169,39 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 }
 
-function renderStats(records) {
-  $('#totalStudents').textContent = formatNumber(sumRecords(records));
-  const provinceTotal = uniqueSorted(records.map((record) => record.province)).length;
-  const cityTotal = uniqueSorted(records.map((record) => record.city)).length;
-  const districtTotal = uniqueSorted(records.map((record) => record.district)).length;
-  $('#provinceCount').textContent = formatNumber(provinceTotal);
-  $('#cityCount').textContent = formatNumber(cityTotal);
-  $('#districtCount').textContent = formatNumber(districtTotal);
-  const provinceFilter = provinceSelect.value;
-  $('#provinceContext').textContent = provinceFilter ? 'provinsi dalam pilihan' : 'dengan data santri';
+function renderStats() {
+  $('#totalStudents').textContent = formatNumber(sumSelectedStudents());
+  $('#provinceCount').textContent = formatNumber(areasAtLevel('province').length);
+  $('#cityCount').textContent = formatNumber(areasAtLevel('city').length);
+  $('#districtCount').textContent = formatNumber(areasAtLevel('district').length);
+  $('#provinceContext').textContent = 'wilayah dalam filter aktif';
 }
 
-function makeBreakdown(records, config) {
-  if (!config.key) {
-    const level = activeLevel();
-    const selected = filterSelects[level]?.value;
-    return selected ? [{ name: selected, parent: filterSelects[hierarchy[Math.max(0, hierarchy.indexOf(level) - 1)]]?.value || '', count: sumRecords(records), level }] : [];
+function makeBreakdown(config) {
+  let areas;
+  if (!config.childLevel) {
+    const level = selectedLevel();
+    const id = currentFilters()[level];
+    const area = catalogById[level].get(id);
+    areas = area ? [area] : [];
+  } else if (config.childLevel === 'province') {
+    areas = catalog.province;
+  } else {
+    areas = childrenByParent[config.childLevel].get(config.parentId) || [];
   }
-  if (config.childLevel === 'province') return groupRecords(records, 'province', 'province');
-  return groupRecords(records, config.key, config.parentKey);
+  return areas.map((area) => {
+    const level = config.childLevel || selectedLevel();
+    const levelIndex = hierarchy.indexOf(level);
+    const parentId = level === 'city' ? area.provinceId : level === 'district' ? area.cityId : level === 'village' ? area.districtId : '';
+    const parentLevel = levelIndex > 0 ? hierarchy[levelIndex - 1] : null;
+    return {
+      id: area.id,
+      name: area.name,
+      parent: parentLevel ? regionName(parentLevel, parentId) : config.parentTitle,
+      count: countFor(level, area.id),
+      level,
+    };
+  }).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'id'));
 }
 
 function pieSlicePath(startAngle, endAngle, radius = 96, center = 110) {
@@ -183,11 +220,15 @@ function formatPercent(value) {
   return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
 }
 
+function formatShare(total, count) {
+  return total ? formatPercent((count / total) * 100) : '0%';
+}
+
 function renderChart(items, config) {
   $('#breakdownTitle').textContent = config.title;
   $('#breakdownSubtitle').textContent = config.childLevel
-    ? `Persentase santri menurut ${fields[config.childLevel].label.toLocaleLowerCase('id')}`
-    : 'Persentase santri pada wilayah terpilih';
+    ? `Rincian ${fields[config.childLevel].label.toLocaleLowerCase('id')} di wilayah terpilih`
+    : 'Ringkasan jumlah santri pada wilayah terpilih';
   $('#chartLevelLabel').textContent = config.childLevel ? fields[config.childLevel].label.toUpperCase() : 'WILAYAH TERPILIH';
   const chart = $('#pieChart');
   if (!items.length) {
@@ -214,93 +255,95 @@ function renderChart(items, config) {
   }
 
   let angle = -Math.PI / 2;
-  const slices = chartItems.map((item) => {
-    const share = total ? (item.count / total) * 100 : 0;
+  const slices = total ? chartItems.map((item) => {
+    const share = (item.count / total) * 100;
     const nextAngle = angle + (share / 100) * Math.PI * 2;
     const path = pieSlicePath(angle, nextAngle);
     angle = nextAngle;
     return `<path class="pie-segment" d="${path}" fill="${item.color}"><title>${escapeHtml(item.name)}: ${formatNumber(item.count)} santri (${formatPercent(share)})</title></path>`;
-  }).join('');
+  }).join('') : '<circle class="pie-empty-ring" cx="110" cy="110" r="88" />';
   const levelLabel = config.childLevel ? fields[config.childLevel].label : 'wilayah terpilih';
   const legend = chartItems.map((item) => {
     const share = total ? (item.count / total) * 100 : 0;
-    const contents = `<span class="pie-legend-swatch" style="background:${item.color}"></span><span class="pie-legend-name">${escapeHtml(item.name)}</span><span class="pie-legend-count">${formatNumber(item.count)}</span><span class="pie-legend-share">${formatPercent(share)}</span>`;
-    const label = `${item.name}, ${formatNumber(item.count)} santri, ${formatPercent(share)}`;
+    const shareLabel = formatShare(total, item.count);
+    const contents = `<span class="pie-legend-swatch" style="background:${item.color}"></span><span class="pie-legend-name">${escapeHtml(item.name)}</span><span class="pie-legend-count">${formatNumber(item.count)}</span><span class="pie-legend-share">${shareLabel}</span>`;
+    const label = `${item.name}, ${formatNumber(item.count)} santri, ${shareLabel}`;
     return item.isAggregate
       ? `<div class="pie-legend-row pie-legend-row-other" aria-label="${escapeHtml(label)}">${contents}</div>`
-      : `<button class="pie-legend-row" type="button" data-level="${escapeHtml(item.level)}" data-value="${escapeHtml(item.name)}" aria-label="Lihat ${escapeHtml(label)}">${contents}</button>`;
+      : `<button class="pie-legend-row" type="button" data-level="${escapeHtml(item.level)}" data-id="${escapeHtml(item.id)}" aria-label="Lihat ${escapeHtml(label)}">${contents}</button>`;
   }).join('');
 
-  chart.innerHTML = `<div class="pie-visual"><svg class="pie-svg" viewBox="0 0 220 220" role="img" aria-label="Diagram lingkaran distribusi santri menurut ${escapeHtml(levelLabel)}; total ${formatNumber(total)} santri">${slices}</svg></div><div class="pie-legend">${legend}</div>`;
-  chart.querySelectorAll('button[data-level]').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.value)));
+  const emptyNote = total ? '' : '<p class="pie-empty-note">Belum ada jumlah santri. Pie chart akan terisi setelah data santri diimpor.</p>';
+  chart.innerHTML = `<div class="pie-visual"><svg class="pie-svg" viewBox="0 0 220 220" role="img" aria-label="Diagram lingkaran ${total ? `jumlah santri menurut ${escapeHtml(levelLabel)}; total ${formatNumber(total)} santri` : 'kosong karena belum ada jumlah santri'}">${slices}</svg></div><div class="pie-legend">${legend}${emptyNote}</div>`;
+  chart.querySelectorAll('button[data-level]').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.id)));
   $('#chartShowing').textContent = otherItems.length
     ? `${formatNumber(visibleItems.length)} wilayah teratas + ${formatNumber(otherItems.length)} lainnya`
-    : `Komposisi ${formatNumber(items.length)} wilayah`;
+    : total ? `Komposisi ${formatNumber(items.length)} wilayah` : `${formatNumber(items.length)} wilayah • belum ada data santri`;
   $('#showAllButton').style.visibility = items.length > 6 ? 'visible' : 'hidden';
   $('#showAllButton').textContent = state.chartExpanded ? 'Tampilkan lebih sedikit ↓' : 'Tampilkan lebih banyak →';
 }
 
-function renderHierarchy(records) {
+function renderHierarchy() {
   const values = currentFilters();
-  const nodes = hierarchy.map((key) => ({ key, value: values[key] })).filter((node) => node.value);
   const container = $('#hierarchyList');
-  if (!nodes.length) {
-    container.innerHTML = hierarchy.map((key) => `<div class="hierarchy-row"><div class="hierarchy-node"><span class="node-dot"></span><span class="node-label"><small>${fields[key].label.toUpperCase()}</small><strong>Semua ${fields[key].label}</strong></span></div><span class="hierarchy-count">${formatNumber(uniqueSorted(records.map((record) => record[fields[key].dataKey])).length)} <span>area</span></span></div>`).join('');
-    return;
-  }
-  container.innerHTML = nodes.map((node) => {
-    const matching = records.filter((record) => record[node.key] === node.value);
-    const count = sumRecords(matching);
-    return `<div class="hierarchy-row"><div class="hierarchy-node"><span class="node-dot"></span><span class="node-label"><small>${fields[node.key].label.toUpperCase()}</small><strong>${escapeHtml(node.value)}</strong></span></div><span class="hierarchy-count">${formatNumber(count)} <span>santri</span></span></div>`;
+  container.innerHTML = hierarchy.map((level) => {
+    const id = values[level];
+    const name = id ? regionName(level, id) : `Semua ${fields[level].label}`;
+    const amount = id ? formatNumber(countFor(level, id)) : formatNumber(areasAtLevel(level).length);
+    const unit = id ? 'santri' : 'area';
+    return `<div class="hierarchy-row"><div class="hierarchy-node"><span class="node-dot"></span><span class="node-label"><small>${fields[level].label.toUpperCase()}</small><strong>${escapeHtml(name)}</strong></span></div><span class="hierarchy-count">${amount} <span>${unit}</span></span></div>`;
   }).join('');
 }
 
-function renderTable(items, config, filteredCount) {
+function renderTable(items, config) {
   $('#tableTitle').textContent = config.tableTitle;
   $('#tableSubtitle').textContent = config.childLevel ? `Pilih wilayah untuk menelusuri data hingga tingkat desa atau kelurahan.` : 'Wilayah yang dipilih sudah berada di tingkat desa atau kelurahan.';
   const tbody = $('#areaTableBody');
   const search = state.search.toLocaleLowerCase('id');
-  const visibleItems = items.filter((item) => !search || `${item.name} ${item.parent}`.toLocaleLowerCase('id').includes(search));
-  if (!visibleItems.length) {
+  const matchingItems = items.filter((item) => !search || `${item.name} ${item.parent}`.toLocaleLowerCase('id').includes(search));
+  const visibleItems = matchingItems.slice(0, state.tableLimit);
+  const loadMore = $('#loadMoreButton');
+  if (!matchingItems.length) {
     const message = search ? 'Tidak ada wilayah yang cocok dengan pencarian.' : 'Tidak ada rincian wilayah pada pilihan ini.';
     tbody.innerHTML = `<tr><td colspan="6" class="empty-row">${message}</td></tr>`;
     $('#tableSummary').textContent = search ? '0 hasil pencarian' : 'Tidak ada tingkat wilayah lanjutan';
+    loadMore.hidden = true;
     return;
   }
   const total = sumRecords(items);
   tbody.innerHTML = visibleItems.map((item, index) => {
     const share = total ? (item.count / total) * 100 : 0;
-    const level = item.level || config.childLevel || activeLevel() || 'province';
+    const level = item.level || config.childLevel || selectedLevel() || 'province';
     const parent = item.parent || config.parentTitle || 'Indonesia';
     const chip = fields[level]?.chip || 'W';
     const chipClass = level === 'city' ? 'city' : level === 'district' ? 'district' : level === 'village' ? 'village' : '';
+    const shareLabel = formatShare(total, item.count);
     return `<tr>
       <td class="rank-col"><span class="rank-num">${String(index + 1).padStart(2, '0')}</span></td>
       <td><span class="area-name-cell"><span class="area-chip ${chipClass}">${chip}</span>${escapeHtml(item.name)}</span></td>
       <td class="parent-name">${escapeHtml(parent)}</td>
       <td class="count-cell">${formatNumber(item.count)}</td>
-      <td><span class="share-cell"><span class="share-track" role="meter" aria-label="Porsi ${escapeHtml(item.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, share).toFixed(1)}"><span class="share-fill" aria-hidden="true" style="width:${Math.min(100, share)}%"></span></span><span class="share-value">${formatPercent(share)}</span></span></td>
-      <td><button class="row-open" type="button" data-level="${escapeHtml(level)}" data-value="${escapeHtml(item.name)}" title="Lihat rincian ${escapeHtml(item.name)}" aria-label="Lihat rincian ${escapeHtml(item.name)}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></td>
+      <td><span class="share-cell"><span class="share-track" role="meter" aria-label="Porsi ${escapeHtml(item.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, share).toFixed(1)}"><span class="share-fill" aria-hidden="true" style="width:${Math.min(100, share)}%"></span></span><span class="share-value">${shareLabel}</span></span></td>
+      <td><button class="row-open" type="button" data-level="${escapeHtml(level)}" data-id="${escapeHtml(item.id)}" title="Lihat rincian ${escapeHtml(item.name)}" aria-label="Lihat rincian ${escapeHtml(item.name)}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></td>
     </tr>`;
   }).join('');
-  tbody.querySelectorAll('.row-open').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.value)));
-  $('#tableSummary').textContent = search ? `${formatNumber(visibleItems.length)} dari ${formatNumber(items.length)} wilayah` : `${formatNumber(items.length)} wilayah • ${formatNumber(filteredCount)} santri`;
+  tbody.querySelectorAll('.row-open').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.id)));
+  $('#tableSummary').textContent = `${formatNumber(visibleItems.length)} dari ${formatNumber(matchingItems.length)} wilayah • ${formatNumber(sumSelectedStudents())} santri`;
+  loadMore.hidden = matchingItems.length <= visibleItems.length;
 }
 
 function render() {
   updateFilterOptions();
-  const records = filteredRecords();
   const config = breakdownConfig();
-  const items = makeBreakdown(records, config);
+  const items = makeBreakdown(config);
   renderCrumbs();
-  renderStats(records);
+  renderStats();
   renderChart(items, config);
-  renderHierarchy(records);
-  renderTable(items, config, sumRecords(records));
-  const provinces = uniqueSorted(records.map((record) => record.province)).length;
-  $('#recordCountLabel').textContent = state.isDemo ? `Data simulasi • ${provinces} provinsi` : `${formatNumber(records.length)} record ditampilkan`;
-  $('#modePill').innerHTML = `<span></span> ${state.isDemo ? 'DATA DEMO' : 'DATA IMPOR'}`;
-  $('#tableModeLabel').textContent = state.isDemo ? 'Angka pada pratinjau ini adalah data simulasi' : 'Data dari file yang diimpor • pratinjau lokal';
+  renderHierarchy();
+  renderTable(items, config);
+  $('#recordCountLabel').textContent = state.isImported ? `${formatNumber(state.records.length)} baris santri dimuat` : `${formatNumber(catalog.province.length)} provinsi • master wilayah nasional`;
+  $('#modePill').innerHTML = `<span></span> ${state.isImported ? 'DATA IMPOR' : 'MASTER WILAYAH'}`;
+  $('#tableModeLabel').textContent = state.isImported ? 'Data santri dari file • tersimpan sementara di perangkat' : 'Master wilayah Indonesia • jumlah santri belum tersedia';
 }
 
 function drillDown(level, value) {
@@ -309,6 +352,7 @@ function drillDown(level, value) {
   filterSelects[level].value = value;
   hierarchy.slice(index + 1).forEach((key) => { filterSelects[key].value = ''; });
   state.search = '';
+  state.tableLimit = 100;
   $('#tableSearch').value = '';
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -318,6 +362,7 @@ function resetFilters() {
   hierarchy.forEach((key) => { filterSelects[key].value = ''; });
   state.search = '';
   state.chartExpanded = false;
+  state.tableLimit = 100;
   $('#tableSearch').value = '';
   render();
 }
@@ -425,12 +470,53 @@ function normalizeImportedRow(source) {
   const district = valueFor('Kecamatan');
   const village = valueFor('Desa/Kelurahan', 'Desa / Kelurahan');
   const id = valueFor('ID Santri');
-  const count = Number(source['Jumlah Santri'] ?? source['jumlah_santri'] ?? 1);
+  const countValue = normalizeText(source['Jumlah Santri'] ?? source['jumlah_santri'] ?? '');
+  const countText = /^\d{1,3}([.,]\d{3})+$/.test(countValue) ? countValue.replace(/[.,]/g, '') : countValue.replace(',', '.');
+  const parsedCount = countText ? Number(countText) : null;
+  const countInvalid = Boolean(countValue) && (!Number.isFinite(parsedCount) || parsedCount < 0);
+  const count = !countValue ? (id ? 1 : 0) : countInvalid ? 0 : parsedCount;
   return {
     id, province, city, district, village,
     villageType: valueFor('Jenis Wilayah'),
-    count: Number.isFinite(count) && count > 0 ? count : 1,
+    count,
+    countInvalid,
   };
+}
+
+function findImportedArea(level, parentId, name) {
+  if (!name) return null;
+  const candidates = nameIndexes[level].get(`${parentId}|${matchNameKey(level, name)}`) || [];
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+function resolveImportedAreas(record) {
+  const province = findImportedArea('province', '', record.province);
+  let city = province ? findImportedArea('city', province.id, record.city) : null;
+  if (!city && province && record.city && record.district) {
+    const key = matchNameKey('city', record.city).replace(/^(KABUPATEN|KOTA ADMINISTRASI|KOTA)\s+/, '');
+    const candidates = nameIndexes.city.get(`${province.id}|${key}`) || [];
+    city = candidates.find((candidate) => findImportedArea('district', candidate.id, record.district)) || null;
+  }
+  const district = city ? findImportedArea('district', city.id, record.district) : null;
+  const village = district ? findImportedArea('village', district.id, record.village) : null;
+  return { province, city, district, village };
+}
+
+function applyImportedRecords(records) {
+  hierarchy.forEach((level) => studentCounts[level].clear());
+  state.totalStudents = 0;
+  let unresolved = 0;
+  records.forEach((record) => {
+    state.totalStudents += record.count;
+    const matched = resolveImportedAreas(record);
+    record.regionIds = Object.fromEntries(hierarchy.map((level) => [level, matched[level]?.id || '']));
+    if (!matched.province || !matched.city || !matched.district || !matched.village) unresolved += 1;
+    hierarchy.forEach((level) => {
+      if (!matched[level]) return;
+      studentCounts[level].set(matched[level].id, countFor(level, matched[level].id) + record.count);
+    });
+  });
+  return unresolved;
 }
 
 async function importFile(file) {
@@ -441,20 +527,23 @@ async function importFile(file) {
     else throw new Error('Gunakan file Excel .xlsx atau CSV.');
     const imported = sourceRows.map(normalizeImportedRow).filter((record) => record.id || record.province || record.city || record.district || record.village);
     if (!imported.length) throw new Error('Tidak ada baris data santri yang dapat dibaca.');
-    const missingArea = imported.filter((record) => !record.province || !record.city || !record.district || !record.village).length;
+    const unresolvedArea = applyImportedRecords(imported);
+    const cleanedCounts = imported.filter((record) => record.countInvalid).length;
     const ids = imported.map((record) => record.id).filter(Boolean);
     const duplicates = ids.length - new Set(ids).size;
     state.records = imported;
-    state.isDemo = false;
+    state.isImported = true;
     state.chartExpanded = false;
     state.search = '';
+    state.tableLimit = 100;
     $('#tableSearch').value = '';
     hierarchy.forEach((key) => { filterSelects[key].value = ''; });
     render();
     const notes = [];
-    if (missingArea) notes.push(`${formatNumber(missingArea)} baris belum memiliki wilayah lengkap`);
+    if (unresolvedArea) notes.push(`${formatNumber(unresolvedArea)} baris wilayah tidak cocok dengan master data`);
+    if (cleanedCounts) notes.push(`${formatNumber(cleanedCounts)} nilai jumlah bermasalah dibersihkan menjadi 0`);
     if (duplicates) notes.push(`${formatNumber(duplicates)} ID ganda, periksa agar jumlah tidak berlebih`);
-    toast(`${formatNumber(imported.length)} baris berhasil dibuka${notes.length ? `. Catatan: ${notes.join('; ')}.` : ` dari ${file.name}.`}`);
+    toast(`${formatNumber(imported.length)} baris santri dimuat${notes.length ? `. Catatan: ${notes.join('; ')}.` : ` dari ${file.name}.`}`);
   } catch (error) {
     console.error(error);
     toast(error.message || 'File belum dapat dibaca. Periksa format dan nama kolom.', true);
@@ -469,13 +558,12 @@ function csvEscape(value) {
 }
 
 function exportSummary() {
-  const records = filteredRecords();
   const config = breakdownConfig();
-  const items = makeBreakdown(records, config);
+  const items = makeBreakdown(config);
   if (!items.length) { toast('Tidak ada rincian wilayah untuk diekspor.', true); return; }
-  const rows = [['Wilayah', 'Wilayah Induk', 'Jumlah Santri', 'Persentase']];
+  const rows = [['Kode Wilayah', 'Wilayah', 'Wilayah Induk', 'Jumlah Santri', 'Persentase']];
   const total = sumRecords(items);
-  items.forEach((item) => rows.push([item.name, item.parent || config.parentTitle || 'Indonesia', item.count, total ? `${((item.count / total) * 100).toFixed(1)}%` : '0%']));
+  items.forEach((item) => rows.push([item.id, item.name, item.parent || config.parentTitle || 'Indonesia', item.count, total ? `${((item.count / total) * 100).toFixed(1)}%` : '0%']));
   const csv = `\uFEFF${rows.map((row) => row.map(csvEscape).join(',')).join('\r\n')}`;
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const url = URL.createObjectURL(blob);
@@ -500,6 +588,7 @@ hierarchy.forEach((key) => filterSelects[key].addEventListener('change', () => {
   const index = hierarchy.indexOf(key);
   hierarchy.slice(index + 1).forEach((lower) => { filterSelects[lower].value = ''; });
   state.chartExpanded = false;
+  state.tableLimit = 100;
   render();
 }));
 
@@ -509,7 +598,8 @@ $('#fileInput').addEventListener('change', (event) => { if (event.target.files?.
 $('#exportButton').addEventListener('click', exportSummary);
 $('#tableExportButton').addEventListener('click', exportSummary);
 $('#showAllButton').addEventListener('click', () => { state.chartExpanded = !state.chartExpanded; render(); });
-$('#tableSearch').addEventListener('input', (event) => { state.search = event.target.value.trim(); render(); });
+$('#tableSearch').addEventListener('input', (event) => { state.search = event.target.value.trim(); state.tableLimit = 100; render(); });
+$('#loadMoreButton').addEventListener('click', () => { state.tableLimit += 100; render(); });
 $('#helpButton').addEventListener('click', openModal);
 $('#aboutLink').addEventListener('click', openModal);
 $('#modalClose').addEventListener('click', closeModal);
@@ -523,6 +613,4 @@ document.addEventListener('click', (event) => {
 });
 
 setToday();
-updateFilterOptions();
-provinceSelect.value = state.records.some((record) => record.province === 'Jawa Barat') ? 'Jawa Barat' : '';
 render();

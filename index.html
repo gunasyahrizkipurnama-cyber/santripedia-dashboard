@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#f5f8f7" />
-  <meta name="description" content="Dashboard demo FOR SANTRI untuk melihat jumlah santri berdasarkan wilayah." />
+  <meta name="description" content="Dashboard FOR SANTRI dengan master wilayah nasional untuk melihat jumlah santri berdasarkan wilayah." />
   <title>FOR SANTRI — Dashboard Yayasan</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -71,7 +71,7 @@
         <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Buka menu"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
         <div class="breadcrumb"><span>Halaman</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg><strong>Dashboard</strong></div>
         <div class="top-actions">
-          <span class="demo-pill" id="modePill"><span></span> DATA DEMO</span>
+          <span class="demo-pill" id="modePill"><span></span> MASTER WILAYAH</span>
           <button class="icon-button help-button" id="helpButton" aria-label="Tentang dashboard"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.8 1.7c-1.1.8-1.6 1.3-1.6 2.8M12 17h.01"/></svg></button>
           <span class="top-divider"></span>
           <div class="top-date"><strong id="todayLabel">Hari ini</strong><small>Yayasan Pesantren</small></div>
@@ -101,13 +101,13 @@
         <section class="filter-panel" aria-label="Filter wilayah">
           <div class="filter-intro">
             <span class="filter-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6.5 7.2v5.3l-3 1.5v-6.8L4 5Z"/></svg></span>
-            <div><strong>Filter wilayah</strong><small>Pilih area untuk melihat rinciannya</small></div>
+            <div><strong>Filter wilayah</strong><small>Pilih provinsi untuk membuka filter tingkat bawah</small></div>
           </div>
           <div class="filter-controls">
             <label class="filter-field"><span>Provinsi</span><select id="provinceSelect"><option value="">Semua Provinsi</option></select></label>
-            <label class="filter-field"><span>Kabupaten / Kota</span><select id="citySelect"><option value="">Semua Kab/Kota</option></select></label>
-            <label class="filter-field"><span>Kecamatan</span><select id="districtSelect"><option value="">Semua Kecamatan</option></select></label>
-            <label class="filter-field"><span>Desa / Kelurahan</span><select id="villageSelect"><option value="">Semua Desa/Kelurahan</option></select></label>
+            <label class="filter-field"><span>Kabupaten / Kota</span><select id="citySelect" disabled><option value="">Pilih Kab/Kota</option></select></label>
+            <label class="filter-field"><span>Kecamatan</span><select id="districtSelect" disabled><option value="">Pilih Kecamatan</option></select></label>
+            <label class="filter-field"><span>Desa / Kelurahan</span><select id="villageSelect" disabled><option value="">Pilih Desa/Kelurahan</option></select></label>
             <button class="reset-button" id="resetFilters" title="Hapus filter" aria-label="Hapus filter"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5"/></svg></button>
           </div>
         </section>
@@ -127,19 +127,19 @@
           <article class="stat-card">
             <div class="stat-top"><span class="stat-icon stat-icon-green"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 7 8.5-4 8.5 4L12 11 3.5 7Z"/><path d="M3.5 7v10L12 21l8.5-4V7M12 11v10"/></svg></span><span class="stat-kicker">PROVINSI</span></div>
             <div class="stat-value" id="provinceCount">0</div>
-            <div class="stat-foot"><span class="stat-context" id="provinceContext">dengan data santri</span></div>
+            <div class="stat-foot"><span class="stat-context" id="provinceContext">wilayah dalam filter aktif</span></div>
             <div class="stat-mini-mark province-mark"><i></i><i></i><i></i><i></i><i></i></div>
           </article>
           <article class="stat-card">
             <div class="stat-top"><span class="stat-icon stat-icon-orange"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V8l8-4 8 4v12H4Z"/><path d="M8 20v-5h8v5M8 9h.01M12 9h.01M16 9h.01"/></svg></span><span class="stat-kicker">KABUPATEN / KOTA</span></div>
             <div class="stat-value" id="cityCount">0</div>
-            <div class="stat-foot"><span class="stat-context">dengan data santri</span></div>
+            <div class="stat-foot"><span class="stat-context">wilayah dalam filter aktif</span></div>
             <div class="stat-mini-mark city-mark"><i></i><i></i><i></i><i></i><i></i></div>
           </article>
           <article class="stat-card">
             <div class="stat-top"><span class="stat-icon stat-icon-lilac"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg></span><span class="stat-kicker">KECAMATAN</span></div>
             <div class="stat-value" id="districtCount">0</div>
-            <div class="stat-foot"><span class="stat-context">dengan data santri</span></div>
+            <div class="stat-foot"><span class="stat-context">wilayah dalam filter aktif</span></div>
             <div class="stat-mini-mark district-mark"><i></i><i></i><i></i><i></i><i></i></div>
           </article>
         </section>
@@ -150,7 +150,7 @@
               <div><span class="section-eyebrow">PERSEBARAN WILAYAH</span><h2 id="breakdownTitle">Santri per Kabupaten / Kota</h2><p id="breakdownSubtitle">Area dengan jumlah santri terbanyak</p></div>
               <button class="icon-button more-button" id="exportButton" title="Ekspor ringkasan CSV" aria-label="Ekspor ringkasan CSV"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
             </div>
-            <div class="chart-legend"><span><i class="legend-swatch"></i>Komposisi jumlah santri</span><span class="chart-sort" id="chartLevelLabel">Persentase dari total wilayah</span></div>
+            <div class="chart-legend"><span><i class="legend-swatch"></i>Komposisi jumlah santri</span><span class="chart-sort" id="chartLevelLabel">PROVINSI</span></div>
             <div class="pie-chart" id="pieChart" aria-live="polite"></div>
             <div class="chart-footer"><span id="chartShowing">Komposisi wilayah</span><button class="text-button" id="showAllButton">Tampilkan lebih banyak <span>→</span></button></div>
           </article>
@@ -176,7 +176,7 @@
               <tbody id="areaTableBody"></tbody>
             </table>
           </div>
-          <div class="table-footer"><span id="tableSummary">—</span><span class="table-demo-label"><i></i><span id="tableModeLabel">Angka pada pratinjau ini adalah data simulasi</span></span></div>
+          <div class="table-footer"><span id="tableSummary">0 wilayah • 0 santri</span><button class="text-button load-more-button" id="loadMoreButton" hidden>Muat 100 wilayah lagi →</button><span class="table-demo-label"><i></i><span id="tableModeLabel">Master wilayah Indonesia • jumlah santri belum tersedia</span></span></div>
         </section>
 
         <footer class="page-footer"><span>© <span id="yearLabel"></span> FOR SANTRI</span><span>Data yang lebih baik, keputusan yang lebih tepat.</span><button id="aboutLink">Tentang pratinjau ini</button></footer>
@@ -191,13 +191,15 @@
       <span class="modal-mark"><span class="brand-mark"><img src="for-santri-logo.png" alt="Logo FOR SANTRI" /></span></span>
       <div class="section-eyebrow">FOR SANTRI • PRATINJAU</div>
       <h2 id="modalTitle">Dashboard contoh</h2>
-      <p>Halaman ini menggunakan data simulasi untuk memperlihatkan filter wilayah dan ringkasan jumlah santri. Impor file Excel template atau CSV untuk melihat data Anda di browser ini.</p>
+      <p>Dashboard ini memuat master 38 provinsi, 514 kabupaten/kota, 7.285 kecamatan, dan 83.762 desa/kelurahan. Jumlah santri dimulai dari 0. Impor file Excel template atau CSV untuk memperbarui ringkasan.</p>
+      <p class="source-note">Sumber wilayah: <a href="https://github.com/prodhokter/dataset-wilayah-indonesia" target="_blank" rel="noreferrer">Dataset Wilayah Indonesia • rujukan Kepmendagri 2025</a>. Data disertakan secara lokal sehingga filter bekerja tanpa API.</p>
       <div class="modal-local-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg><span>File yang diimpor diproses di perangkat ini dan tidak dikirim ke server.</span></div>
       <button class="button button-primary modal-done" id="modalDone">Mengerti</button>
     </section>
   </div>
 
   <script src="jszip.min.js"></script>
+  <script src="data/wilayah-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

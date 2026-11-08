@@ -1,23 +1,37 @@
 # FOR SANTRI Dashboard
 
-Prototipe dashboard web FOR SANTRI untuk meninjau jumlah santri menurut provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan.
+Dashboard lokal untuk melihat jumlah santri berdasarkan provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan.
 
 ## Membuka dashboard
 
-1. Ekstrak folder `santripedia-dashboard` bila dikirim sebagai arsip.
-2. Buka `index.html` di browser modern.
-3. Pilih wilayah pada filter atau gunakan tombol **Impor data** untuk membuka file `.xlsx` yang disertakan atau file `.csv` dengan header yang sama.
+1. Ekstrak folder `santripedia-dashboard` dari arsip ZIP.
+2. Buka `index.html` di Safari atau browser modern.
+3. Pilih provinsi, lalu pilih kabupaten/kota, kecamatan, dan desa/kelurahan untuk mempersempit filter.
+4. Gunakan **Impor data** untuk memuat file Excel template atau CSV.
 
-Dashboard menghitung dan menampilkan data di browser. File impor tidak dikirim ke server. Data yang diimpor hanya tersedia selama halaman masih terbuka.
+Master wilayah disertakan di dalam folder, sehingga filter dan chart tetap bisa dipakai tanpa koneksi API. File santri yang diimpor dibaca di browser dan tidak diunggah ke server; datanya hanya tersimpan selama halaman terbuka.
 
-## Isi pratinjau
+## Master wilayah
 
-- Filter wilayah bertingkat dengan pilihan yang saling mengikuti.
-- Ringkasan jumlah santri dan jumlah wilayah di data terpilih.
-- Grafik dan tabel wilayah yang bisa dipakai untuk menelusuri tingkat berikutnya.
-- Ekspor ringkasan wilayah sebagai CSV.
-- Logo FOR SANTRI dan data contoh yang menunjukkan Jawa Barat 40.000 santri, Kota Bandung 17.000, Kecamatan Cicendo 5.000, dan Kelurahan Sukaraja 1.000.
+Data mengikuti dataset turunan dari data wilayah Kemendagri 2025 yang merujuk Kepmendagri No. 300.2.2-2138 Tahun 2025. Jumlah baris yang disertakan:
 
-Template Excel tersedia sebagai `Template_Impor_Data_Awal_SANTRIPEDIA.xlsx` di folder ini.
+- 38 provinsi
+- 514 kabupaten/kota
+- 7.285 kecamatan
+- 83.762 desa/kelurahan
 
-Angka bawaan hanya simulasi untuk memperlihatkan cara kerja. Dashboard ini belum memiliki login, basis data, sinkronisasi collector, ataupun layanan server.
+Data mentah CSV berada di folder `data/`, sedangkan `data/wilayah-data.js` adalah versi yang dimuat dashboard. Kode wilayah digunakan sebagai ID internal dan juga disertakan saat mengekspor ringkasan.
+
+Sumber data dan ketentuan lisensi ada di [dataset-wilayah-indonesia](https://github.com/prodhokter/dataset-wilayah-indonesia) dan `data/LICENSE-WILAYAH-UPSTREAM.txt`. Situs rujukan awal yang diberikan: [kodewilayah.web.id](https://kodewilayah.web.id/). Kedua sumber memakai cakupan/pembaruan yang berbeda; dashboard ini memakai dataset Kepmendagri 2025 agar daftar kode dan nama dapat disertakan secara lokal.
+
+## Jumlah santri
+
+Dashboard dimulai dengan 0 santri; tidak ada angka simulasi. Pie chart menampilkan rincian wilayah sesuai filter dan menunjukkan keadaan kosong sampai data jumlah santri diimpor. Persentase akan dihitung setelah data tersedia.
+
+Jika kolom **Jumlah Santri** dikosongkan pada baris yang memiliki ID santri, baris tersebut dihitung sebagai satu santri. Nilai `0` tetap dihitung sebagai nol. Nilai jumlah seperti `-`, teks `error`, nilai negatif, dan teks nonangka dibersihkan menjadi `0` serta dicatat setelah impor. Nama wilayah dicocokkan dengan master data; baris yang tidak cocok diberi catatan setelah impor.
+
+Template Excel tersedia sebagai `Template_Impor_Data_Awal_SANTRIPEDIA.xlsx`.
+
+## Batasan prototipe
+
+Impor data hanya untuk pratinjau lokal dan tidak tersimpan setelah halaman ditutup. Dashboard ini belum memiliki login, basis data bersama, sinkronisasi aplikasi collector, maupun layanan server.
