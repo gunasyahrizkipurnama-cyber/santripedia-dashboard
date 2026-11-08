@@ -40,6 +40,7 @@ const fields = {
   village: { select: 'villageSelect', label: 'Desa / Kelurahan', dataKey: 'village', placeholder: 'Semua Desa/Kelurahan', chip: 'D' },
 };
 const hierarchy = ['province', 'city', 'district', 'village'];
+const pieColors = ['#23845f', '#45a97b', '#8bc69a', '#d1a14d', '#6c91c4', '#9579b8', '#d17868', '#42a2a0', '#a9b64b', '#d08daf'];
 const state = { records: demoRecords, isDemo: true, chartExpanded: false, toastTimer: null, search: '' };
 const $ = (selector) => document.querySelector(selector);
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
@@ -166,27 +167,77 @@ function makeBreakdown(records, config) {
   return groupRecords(records, config.key, config.parentKey);
 }
 
+function pieSlicePath(startAngle, endAngle, radius = 96, center = 110) {
+  if (endAngle - startAngle >= (Math.PI * 2) - 0.000001) {
+    return `M ${center} ${center - radius} A ${radius} ${radius} 0 1 1 ${center} ${center + radius} A ${radius} ${radius} 0 1 1 ${center} ${center - radius} Z`;
+  }
+  const startX = center + radius * Math.cos(startAngle);
+  const startY = center + radius * Math.sin(startAngle);
+  const endX = center + radius * Math.cos(endAngle);
+  const endY = center + radius * Math.sin(endAngle);
+  const largeArc = endAngle - startAngle > Math.PI ? 1 : 0;
+  return `M ${center} ${center} L ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY} Z`;
+}
+
+function formatPercent(value) {
+  return `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+}
+
 function renderChart(items, config) {
   $('#breakdownTitle').textContent = config.title;
-  $('#breakdownSubtitle').textContent = config.childLevel ? 'Area dengan jumlah santri terbanyak' : 'Total santri pada tingkat wilayah terpilih';
-  const chart = $('#barChart');
-  const sorted = items.slice(0, state.chartExpanded ? 12 : 6);
+  $('#breakdownSubtitle').textContent = config.childLevel
+    ? `Persentase santri menurut ${fields[config.childLevel].label.toLocaleLowerCase('id')}`
+    : 'Persentase santri pada wilayah terpilih';
+  $('#chartLevelLabel').textContent = config.childLevel ? fields[config.childLevel].label.toUpperCase() : 'WILAYAH TERPILIH';
+  const chart = $('#pieChart');
   if (!items.length) {
-    chart.innerHTML = '<div class="chart-empty">Desa atau kelurahan adalah tingkat wilayah terakhir.</div>';
-    $('#chartShowing').textContent = 'Tidak ada rincian tingkat di bawahnya';
+    const nextArea = config.childLevel ? fields[config.childLevel].label.toLocaleLowerCase('id') : 'wilayah ini';
+    chart.innerHTML = `<div class="chart-empty">Belum ada data untuk ${escapeHtml(nextArea)}.</div>`;
+    $('#chartShowing').textContent = 'Belum ada data untuk filter ini';
     $('#showAllButton').style.visibility = 'hidden';
     return;
   }
-  const max = Math.max(...items.map((item) => item.count), 1);
-  chart.innerHTML = sorted.map((item, index) => {
-    const width = Math.max(3, (item.count / max) * 100);
-    const filterKey = item.level;
-    return `<button class="bar-row" type="button" data-level="${escapeHtml(filterKey)}" data-value="${escapeHtml(item.name)}" aria-label="Lihat ${escapeHtml(item.name)}, ${formatNumber(item.count)} santri"><span class="bar-label">${escapeHtml(item.name)}</span><span class="bar-track"><span class="bar-fill" style="width:${width}%;animation-delay:${index * 45}ms"></span></span><span class="bar-count">${formatNumber(item.count)}</span></button>`;
+
+  const total = sumRecords(items);
+  const displayLimit = state.chartExpanded ? 12 : 6;
+  const visibleItems = items.length > displayLimit ? items.slice(0, displayLimit - 1) : items;
+  const otherItems = items.slice(visibleItems.length);
+  const chartItems = visibleItems.map((item, index) => ({ ...item, color: pieColors[index % pieColors.length] }));
+  if (otherItems.length) {
+    chartItems.push({
+      name: `Lainnya (${formatNumber(otherItems.length)} wilayah)`,
+      count: sumRecords(otherItems),
+      level: null,
+      isAggregate: true,
+      color: '#bdcec4',
+    });
+  }
+
+  let angle = -Math.PI / 2;
+  const slices = chartItems.map((item) => {
+    const share = total ? (item.count / total) * 100 : 0;
+    const nextAngle = angle + (share / 100) * Math.PI * 2;
+    const path = pieSlicePath(angle, nextAngle);
+    angle = nextAngle;
+    return `<path class="pie-segment" d="${path}" fill="${item.color}"><title>${escapeHtml(item.name)}: ${formatNumber(item.count)} santri (${formatPercent(share)})</title></path>`;
   }).join('');
-  $('#chartShowing').textContent = `Menampilkan ${formatNumber(sorted.length)} dari ${formatNumber(items.length)} wilayah`;
+  const levelLabel = config.childLevel ? fields[config.childLevel].label : 'wilayah terpilih';
+  const legend = chartItems.map((item) => {
+    const share = total ? (item.count / total) * 100 : 0;
+    const contents = `<span class="pie-legend-swatch" style="background:${item.color}"></span><span class="pie-legend-name">${escapeHtml(item.name)}</span><span class="pie-legend-count">${formatNumber(item.count)}</span><span class="pie-legend-share">${formatPercent(share)}</span>`;
+    const label = `${item.name}, ${formatNumber(item.count)} santri, ${formatPercent(share)}`;
+    return item.isAggregate
+      ? `<div class="pie-legend-row pie-legend-row-other" aria-label="${escapeHtml(label)}">${contents}</div>`
+      : `<button class="pie-legend-row" type="button" data-level="${escapeHtml(item.level)}" data-value="${escapeHtml(item.name)}" aria-label="Lihat ${escapeHtml(label)}">${contents}</button>`;
+  }).join('');
+
+  chart.innerHTML = `<div class="pie-visual"><svg class="pie-svg" viewBox="0 0 220 220" role="img" aria-label="Diagram lingkaran distribusi santri menurut ${escapeHtml(levelLabel)}; total ${formatNumber(total)} santri">${slices}</svg></div><div class="pie-legend">${legend}</div>`;
+  chart.querySelectorAll('button[data-level]').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.value)));
+  $('#chartShowing').textContent = otherItems.length
+    ? `${formatNumber(visibleItems.length)} wilayah teratas + ${formatNumber(otherItems.length)} lainnya`
+    : `Komposisi ${formatNumber(items.length)} wilayah`;
   $('#showAllButton').style.visibility = items.length > 6 ? 'visible' : 'hidden';
-  $('#showAllButton').textContent = state.chartExpanded ? 'Tampilkan lebih sedikit ↓' : 'Lihat rincian →';
-  chart.querySelectorAll('.bar-row').forEach((button) => button.addEventListener('click', () => drillDown(button.dataset.level, button.dataset.value)));
+  $('#showAllButton').textContent = state.chartExpanded ? 'Tampilkan lebih sedikit ↓' : 'Tampilkan lebih banyak →';
 }
 
 function renderHierarchy(records) {
@@ -228,7 +279,7 @@ function renderTable(items, config, filteredCount) {
       <td><span class="area-name-cell"><span class="area-chip ${chipClass}">${chip}</span>${escapeHtml(item.name)}</span></td>
       <td class="parent-name">${escapeHtml(parent)}</td>
       <td class="count-cell">${formatNumber(item.count)}</td>
-      <td><span class="share-cell"><span class="share-track"><span class="share-fill" style="width:${Math.min(100, share)}%"></span></span><span class="share-value">${share.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%</span></span></td>
+      <td><span class="share-cell"><span class="share-track" role="meter" aria-label="Porsi ${escapeHtml(item.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100, share).toFixed(1)}"><span class="share-fill" aria-hidden="true" style="width:${Math.min(100, share)}%"></span></span><span class="share-value">${formatPercent(share)}</span></span></td>
       <td><button class="row-open" type="button" data-level="${escapeHtml(level)}" data-value="${escapeHtml(item.name)}" title="Lihat rincian ${escapeHtml(item.name)}" aria-label="Lihat rincian ${escapeHtml(item.name)}"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></td>
     </tr>`;
   }).join('');
