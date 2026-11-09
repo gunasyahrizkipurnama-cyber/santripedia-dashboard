@@ -193,8 +193,14 @@
       </header>
       <div class="student-toolbar">
         <div class="student-count"><strong id="studentTotal">0</strong><span>data santri</span></div>
-        <button class="button button-primary" id="showStudentFormButton" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tambah santri</button>
+        <div class="student-toolbar-actions">
+          <a class="button button-quiet" href="Template_Data_Santri.xlsx" download><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg>Unduh Excel</a>
+          <button class="button button-quiet" id="importStudentsButton" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></svg>Unggah Excel</button>
+          <input id="studentFileInput" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+          <button class="button button-primary" id="showStudentFormButton" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tambah santri</button>
+        </div>
       </div>
+      <p class="student-excel-note">Isi satu santri per baris. ID, nama lengkap, provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan wajib diisi; jenis kelamin opsional.</p>
       <form class="student-form-panel" id="studentFormPanel" hidden>
         <div class="student-form-heading"><strong>Tambah data santri</strong><span>Kolom bertanda * wajib diisi</span></div>
         <div class="student-form-grid">

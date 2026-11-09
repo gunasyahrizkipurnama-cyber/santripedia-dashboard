@@ -459,7 +459,10 @@ async function parseXlsx(file) {
   const headerIndex = parsedRows.findIndex((row) => row.includes('ID Santri') && row.includes('Provinsi'));
   if (headerIndex < 0) throw new Error('Header ID Santri dan Provinsi tidak ditemukan. Gunakan template Excel yang disertakan.');
   const headers = parsedRows[headerIndex];
-  return parsedRows.slice(headerIndex + 1).map((values) => Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ''])));
+  return parsedRows.slice(headerIndex + 1).map((values, index) => ({
+    ...Object.fromEntries(headers.map((header, column) => [header, values[column] ?? ''])),
+    __rowNumber: Number(sheetRows[headerIndex + index + 1]?.getAttribute('r')) || headerIndex + index + 2,
+  }));
 }
 
 function normalizeImportedRow(source) {
@@ -678,6 +681,83 @@ function addStudent(event) {
   toast(saved ? 'Data santri berhasil ditambahkan.' : 'Data ditambahkan, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
 
+async function importStudentFile(file) {
+  try {
+    if (!/\.xlsx$/i.test(file.name)) throw new Error('Pilih file Excel .xlsx. Unduh template yang tersedia agar nama kolomnya sesuai.');
+    const sourceRows = await parseXlsx(file);
+    const existingIds = new Set(state.records.map((record) => normalizeText(record.id).toLocaleLowerCase('id')).filter(Boolean));
+    const accepted = [];
+    const issues = [];
+    const requiredFields = [
+      ['id', 'ID Santri'], ['name', 'Nama lengkap'], ['province', 'Provinsi'],
+      ['city', 'Kabupaten/Kota'], ['district', 'Kecamatan'], ['village', 'Desa/Kelurahan'],
+    ];
+
+    sourceRows.forEach((source, index) => {
+      const record = normalizeImportedRow(source);
+      const rowNumber = source.__rowNumber || index + 2;
+      if (![record.id, record.name, record.gender, record.province, record.city, record.district, record.village].some(Boolean)) return;
+      const rowIssues = [];
+      requiredFields.forEach(([key, label]) => { if (!record[key]) rowIssues.push(`${label} kosong`); });
+      const normalizedId = record.id.toLocaleLowerCase('id');
+      if (normalizedId && existingIds.has(normalizedId)) rowIssues.push(`ID ${record.id} sudah terdaftar atau berulang`);
+
+      const genderKey = record.gender.toLocaleLowerCase('id').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '');
+      if (record.gender) {
+        if (['l', 'lakilaki', 'pria', 'male'].includes(genderKey)) record.gender = 'Laki-laki';
+        else if (['p', 'perempuan', 'wanita', 'female'].includes(genderKey)) record.gender = 'Perempuan';
+        else rowIssues.push('Jenis kelamin isi Laki-laki atau Perempuan');
+      }
+
+      let matched = null;
+      if (!rowIssues.length) {
+        matched = resolveImportedAreas(record);
+        if (!matched.province || !matched.city || !matched.district || !matched.village) {
+          rowIssues.push('Nama wilayah tidak cocok dengan master wilayah; periksa ejaan dan urutannya');
+        }
+      }
+      if (rowIssues.length) {
+        issues.push(`Baris ${rowNumber}: ${rowIssues.join(', ')}`);
+        return;
+      }
+
+      record.province = matched.province.name;
+      record.city = matched.city.name;
+      record.district = matched.district.name;
+      record.village = matched.village.name;
+      record.villageType = '';
+      record.count = 1;
+      record.countInvalid = false;
+      accepted.push(record);
+      existingIds.add(normalizedId);
+    });
+
+    if (!accepted.length) {
+      const detail = issues.length ? `\n\n${issues.slice(0, 10).join('\n')}${issues.length > 10 ? `\n…dan ${issues.length - 10} baris lainnya.` : ''}` : '';
+      window.alert(`Tidak ada data santri yang ditambahkan. Periksa isi file dan gunakan template yang disediakan.${detail}`);
+      return;
+    }
+
+    state.records.push(...accepted);
+    state.isImported = true;
+    applyImportedRecords(state.records);
+    const saved = saveStudentRecords();
+    $('#studentSearch').value = '';
+    render();
+    renderStudentRows();
+    toast(`${formatNumber(accepted.length)} data santri berhasil ditambahkan${saved ? '.' : ', tetapi belum tersimpan setelah halaman ditutup.'}`, !saved);
+    if (issues.length) {
+      const detail = issues.slice(0, 10).join('\n');
+      window.alert(`Impor selesai. ${accepted.length} santri ditambahkan; ${issues.length} baris dilewati.\n\n${detail}${issues.length > 10 ? `\n…dan ${issues.length - 10} baris lainnya.` : ''}`);
+    }
+  } catch (error) {
+    console.error(error);
+    toast(error.message || 'File Excel belum dapat dibaca. Gunakan template yang disediakan.', true);
+  } finally {
+    $('#studentFileInput').value = '';
+  }
+}
+
 function exportSummary() {
   const config = breakdownConfig();
   const items = makeBreakdown(config);
@@ -748,6 +828,8 @@ $('#cancelStudentFormButton').addEventListener('click', () => {
 });
 $('#studentFormPanel').addEventListener('submit', addStudent);
 $('#studentSearch').addEventListener('input', renderStudentRows);
+$('#importStudentsButton').addEventListener('click', () => $('#studentFileInput').click());
+$('#studentFileInput').addEventListener('change', (event) => { if (event.target.files?.[0]) importStudentFile(event.target.files[0]); });
 $('#studentProvince').addEventListener('change', () => {
   $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
   updateStudentLocationOptions();

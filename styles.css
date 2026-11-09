@@ -244,8 +244,10 @@ tbody tr:last-child td { border-bottom: 0; }
 .student-modal-heading h2 { margin-top: 5px; font: 800 22px/1.25 Manrope, sans-serif; letter-spacing: -.04em; }
 .student-modal-heading p { margin-top: 5px; color: var(--muted); font-size: 11px; }
 .student-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 0; }
+.student-toolbar-actions { display: flex; align-items: center; gap: 7px; }
 .student-count { display: flex; align-items: baseline; gap: 7px; color: var(--muted); font-size: 11px; }
 .student-count strong { color: var(--ink); font: 800 20px Manrope, sans-serif; }
+.student-excel-note { margin: -6px 0 12px; color: var(--muted); font-size: 10px; line-height: 1.5; }
 .student-form-panel { margin-bottom: 15px; padding: 16px; border: 1px solid #dcebe4; border-radius: 10px; background: #f8fbf9; }
 .student-form-heading { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 13px; color: var(--ink); font-size: 12px; }
 .student-form-heading span { color: var(--muted); font-size: 10px; }
@@ -324,6 +326,10 @@ tbody tr:last-child td { border-bottom: 0; }
   .student-backdrop { padding: 8px; }
   .student-modal { max-height: 96vh; padding: 16px; border-radius: 12px; }
   .student-modal-heading h2 { font-size: 19px; }
+  .student-toolbar { align-items: flex-start; flex-direction: column; }
+  .student-toolbar-actions { width: 100%; flex-wrap: wrap; }
+  .student-toolbar-actions .button { flex: 1; }
+  .student-excel-note { margin-top: -3px; }
   .student-toolbar { padding: 12px 0; }
   .student-form-panel { padding: 12px; }
   .student-form-grid { grid-template-columns: 1fr; gap: 9px; }
