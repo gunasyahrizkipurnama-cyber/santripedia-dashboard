@@ -149,6 +149,11 @@ h1 span { color: #16866a; }
 .comparison-control { min-width: 115px; display: flex; flex-direction: column; gap: 5px; color: #8e9b93; font-size: 8px; }
 .comparison-control select, .comparison-control input { width: 100%; height: 32px; padding: 0 8px; border: 1px solid #e3ebe6; border-radius: 6px; color: #496055; background: #fff; font: 10px 'DM Sans', sans-serif; }
 .comparison-period-caption { margin: 14px 0 9px; color: #819087; font-size: 9px; }
+.comparison-control[hidden] { display: none; }
+.comparison-data-banner { min-height: 31px; margin: 0 0 10px; padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 6px; color: #688074; background: #f5f9f6; font-size: 8px; line-height: 1.5; }
+.comparison-data-banner.warning { color: #7a673d; background: #fff9ec; }
+.comparison-data-action { flex: 0 0 auto; border: 0; padding: 3px 0; color: #397b60; background: none; font: 700 8px 'DM Sans', sans-serif; cursor: pointer; }
+.comparison-data-action[hidden] { display: none; }
 .comparison-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
 .comparison-metric { min-height: 63px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; border: 1px solid #e9efeb; border-radius: 7px; background: #fbfdfc; }
 .comparison-metric span { color: #8e9b93; font-size: 8px; }
@@ -167,7 +172,6 @@ h1 span { color: #16866a; }
 .comparison-table .comparison-empty { padding: 18px 10px; color: #8e9b93; text-align: center !important; font-weight: 400; white-space: normal; }
 .growth-positive { color: #138466 !important; font-weight: 700; }
 .growth-negative { color: #b35c53 !important; font-weight: 700; }
-.comparison-data-note { margin-top: 9px; color: #9aa69f; font-size: 8px; line-height: 1.5; }
 .breakdown-panel, .hierarchy-panel { min-height: 287px; padding: 17px 18px 12px; }
 .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .panel-heading h2 { margin-top: 6px; font: 700 14px/1.3 Manrope, sans-serif; letter-spacing: -.025em; color: #23392f; }

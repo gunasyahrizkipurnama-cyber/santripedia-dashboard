@@ -478,8 +478,10 @@ function renderComparison() {
 
   const undated = state.records.reduce((total, record) => total + (parseRegistrationDate(record.registeredAt) ? 0 : Math.max(0, Number(record.count ?? 1) || 0)), 0);
   $('#comparisonDataNote').textContent = undated
-    ? `${formatNumber(undated)} data santri belum memiliki tanggal daftar sehingga tidak dihitung. Gunakan tombol Ubah di menu Data santri untuk melengkapi tanggal lama.`
+    ? `${formatNumber(undated)} data santri belum memiliki tanggal daftar, jadi belum masuk perbandingan. Lengkapi tanggalnya agar pertumbuhan tercatat.`
     : 'Perbandingan dihitung dari tanggal daftar dan mengikuti filter wilayah aktif.';
+  $('#comparisonDataBanner').classList.toggle('warning', undated > 0);
+  $('#openStudentManagerFromComparison').hidden = undated === 0;
 }
 
 function render() {
@@ -1032,6 +1034,7 @@ $('#comparisonGranularity').addEventListener('change', renderComparison);
 $('#comparisonDay').addEventListener('change', renderComparison);
 $('#comparisonMonth').addEventListener('change', renderComparison);
 $('#comparisonYear').addEventListener('input', renderComparison);
+$('#openStudentManagerFromComparison').addEventListener('click', openStudentManager);
 $('#studentProvince').addEventListener('change', () => {
   $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
   updateStudentLocationOptions();
