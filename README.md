@@ -9,7 +9,9 @@ Dashboard lokal untuk melihat jumlah santri berdasarkan provinsi, kabupaten/kota
 3. Pilih provinsi, lalu pilih kabupaten/kota, kecamatan, dan desa/kelurahan untuk mempersempit filter.
 4. Buka menu **Data santri** untuk menambahkan, mencari, atau menghapus santri. Di sana, pilih **Unduh Excel** untuk mendapatkan template santri, lalu **Unggah Excel** untuk menambahkan banyak santri sekaligus.
 
-Template Data Santri memiliki kolom ID Santri, Nama Lengkap, Jenis Kelamin, Provinsi, Kabupaten/Kota, Kecamatan, dan Desa/Kelurahan. Isi satu santri per baris. ID, nama, dan semua kolom wilayah wajib diisi; jenis kelamin opsional. Impor menambahkan baris valid, melewati ID ganda atau wilayah yang tidak cocok, lalu menampilkan baris yang perlu diperbaiki.
+Template Data Santri memiliki kolom ID Santri, Nama Lengkap, Jenis Kelamin, Tanggal Daftar, Provinsi, Kabupaten/Kota, Kecamatan, dan Desa/Kelurahan. Isi satu santri per baris. ID, nama, tanggal daftar, dan semua kolom wilayah wajib diisi; jenis kelamin opsional. Impor menambahkan baris valid, melewati ID ganda atau wilayah yang tidak cocok, lalu menampilkan baris yang perlu diperbaiki.
+
+Grafik perbandingan pendaftaran membandingkan hari terpilih dengan hari sebelumnya, bulan terpilih dengan bulan sebelumnya, atau tahun terpilih dengan tahun sebelumnya. Data lama tanpa tanggal daftar tidak dimasukkan; tanggalnya bisa dilengkapi dari menu Data santri.
 
 Master wilayah disertakan di dalam folder, sehingga filter dan chart tetap bisa dipakai tanpa koneksi API. Data manual dan file santri yang diimpor disimpan di browser pada perangkat ini dan tidak diunggah ke server.
 

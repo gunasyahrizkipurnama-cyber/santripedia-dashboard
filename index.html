@@ -165,6 +165,33 @@
           </article>
         </section>
 
+        <section class="panel comparison-panel" aria-labelledby="comparisonTitle">
+          <div class="panel-heading comparison-heading">
+            <div><span class="section-eyebrow">PERKEMBANGAN PENDAFTARAN</span><h2 id="comparisonTitle">Perbandingan pendaftaran santri</h2><p id="comparisonSubtitle">Bandingkan jumlah pendaftaran dan lokasi dengan pertumbuhan tertinggi.</p></div>
+            <div class="comparison-controls">
+              <label class="comparison-control"><span>Bandingkan per</span><select id="comparisonGranularity"><option value="day">Hari</option><option value="month" selected>Bulan</option><option value="year">Tahun</option></select></label>
+              <label class="comparison-control" id="comparisonDayWrap"><span>Tanggal</span><input id="comparisonDay" type="date" /></label>
+              <label class="comparison-control" id="comparisonMonthWrap" hidden><span>Bulan</span><input id="comparisonMonth" type="month" /></label>
+              <label class="comparison-control" id="comparisonYearWrap" hidden><span>Tahun</span><input id="comparisonYear" type="number" min="2000" max="2100" inputmode="numeric" /></label>
+            </div>
+          </div>
+          <p class="comparison-period-caption" id="comparisonPeriodCaption"></p>
+          <div class="comparison-metrics" aria-live="polite">
+            <article class="comparison-metric"><span id="comparisonPreviousLabel">Periode sebelumnya</span><strong id="comparisonPreviousCount">0</strong></article>
+            <article class="comparison-metric"><span id="comparisonCurrentLabel">Periode terpilih</span><strong id="comparisonCurrentCount">0</strong></article>
+            <article class="comparison-metric"><span>Perubahan jumlah</span><strong id="comparisonDeltaCount">0</strong></article>
+            <article class="comparison-metric comparison-metric-growth"><span>Pertumbuhan</span><strong id="comparisonGrowthPercent">0%</strong></article>
+          </div>
+          <div class="comparison-location-heading"><div><strong id="comparisonLocationTitle">Pertumbuhan per provinsi</strong><span id="comparisonLocationNote">Lokasi dengan perubahan jumlah pendaftaran terbesar</span></div><span id="comparisonLevelLabel">PROVINSI</span></div>
+          <div class="comparison-table-scroll">
+            <table class="comparison-table">
+              <thead><tr><th>LOKASI</th><th>SEBELUMNYA</th><th>TERPILIH</th><th>PERUBAHAN</th><th>PERTUMBUHAN</th></tr></thead>
+              <tbody id="comparisonRows"></tbody>
+            </table>
+          </div>
+          <p class="comparison-data-note" id="comparisonDataNote"></p>
+        </section>
+
         <section class="panel table-panel" id="detailPanel">
           <div class="panel-heading table-heading">
             <div><span class="section-eyebrow">RINCIAN DATA</span><h2 id="tableTitle">Daftar Kabupaten / Kota</h2><p id="tableSubtitle">Pilih wilayah untuk menelusuri data hingga tingkat desa atau kelurahan.</p></div>
@@ -200,23 +227,24 @@
           <button class="button button-primary" id="showStudentFormButton" type="button"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tambah santri</button>
         </div>
       </div>
-      <p class="student-excel-note">Isi satu santri per baris. ID, nama lengkap, provinsi, kabupaten/kota, kecamatan, dan desa/kelurahan wajib diisi; jenis kelamin opsional.</p>
+      <p class="student-excel-note">Isi satu santri per baris. ID, nama lengkap, tanggal daftar, dan seluruh wilayah wajib diisi; jenis kelamin opsional.</p>
       <form class="student-form-panel" id="studentFormPanel" hidden>
-        <div class="student-form-heading"><strong>Tambah data santri</strong><span>Kolom bertanda * wajib diisi</span></div>
+        <div class="student-form-heading"><strong id="studentFormTitle">Tambah data santri</strong><span>Kolom bertanda * wajib diisi</span></div>
         <div class="student-form-grid">
           <label class="student-field"><span>ID Santri *</span><input id="studentId" name="studentId" required maxlength="80" autocomplete="off" placeholder="Contoh: FS-0001" /></label>
           <label class="student-field"><span>Nama lengkap *</span><input id="studentName" name="studentName" required maxlength="120" autocomplete="name" placeholder="Nama santri" /></label>
           <label class="student-field"><span>Jenis kelamin</span><select id="studentGender" name="studentGender"><option value="">Pilih</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></label>
+          <label class="student-field"><span>Tanggal daftar *</span><input id="studentRegisteredAt" name="studentRegisteredAt" type="date" required /></label>
           <label class="student-field"><span>Provinsi *</span><select id="studentProvince" required><option value="">Pilih Provinsi</option></select></label>
           <label class="student-field"><span>Kabupaten / Kota *</span><select id="studentCity" required disabled><option value="">Pilih Kab/Kota</option></select></label>
           <label class="student-field"><span>Kecamatan *</span><select id="studentDistrict" required disabled><option value="">Pilih Kecamatan</option></select></label>
           <label class="student-field"><span>Desa / Kelurahan *</span><select id="studentVillage" required disabled><option value="">Pilih Desa/Kelurahan</option></select></label>
         </div>
-        <div class="student-form-actions"><button class="button button-quiet" id="cancelStudentFormButton" type="button">Batal</button><button class="button button-primary" type="submit">Simpan data</button></div>
+        <div class="student-form-actions"><button class="button button-quiet" id="cancelStudentFormButton" type="button">Batal</button><button class="button button-primary" id="studentSubmitButton" type="submit">Simpan data</button></div>
       </form>
       <label class="table-search student-search"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="studentSearch" type="search" placeholder="Cari nama, ID, atau wilayah" autocomplete="off" /></label>
       <div class="table-scroll student-table-scroll">
-        <table class="student-table"><thead><tr><th>DATA SANTRI</th><th>JENIS KELAMIN</th><th>WILAYAH</th><th>JUMLAH</th><th></th></tr></thead><tbody id="studentRows"></tbody></table>
+        <table class="student-table"><thead><tr><th>DATA SANTRI</th><th>JENIS KELAMIN</th><th>WILAYAH</th><th>TANGGAL DAFTAR</th><th>JUMLAH</th><th></th></tr></thead><tbody id="studentRows"></tbody></table>
       </div>
       <p class="student-storage-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg>Data disimpan di browser pada perangkat ini dan tidak tersinkron ke perangkat lain.</p>
     </section>

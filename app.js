@@ -12,6 +12,25 @@ const studentStorageKey = 'for-santri-student-records-v1';
 const $ = (selector) => document.querySelector(selector);
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
 const normalizeText = (value) => String(value ?? '').trim();
+function localISODate(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+function parseRegistrationDate(value) {
+  const text = normalizeText(value);
+  if (!text) return '';
+  const iso = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ].*)?$/);
+  const dmy = text.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/);
+  let year; let month; let day;
+  if (iso) [, year, month, day] = iso;
+  else if (dmy) [, day, month, year] = dmy;
+  else if (/^\d+(\.\d+)?$/.test(text) && Number(text) >= 20000 && Number(text) <= 100000) {
+    const excelDate = new Date(Date.UTC(1899, 11, 30) + Math.round(Number(text)) * 86400000);
+    return Number.isNaN(excelDate.getTime()) ? '' : excelDate.toISOString().slice(0, 10);
+  } else return '';
+  const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (parsed.getUTCFullYear() !== Number(year) || parsed.getUTCMonth() !== Number(month) - 1 || parsed.getUTCDate() !== Number(day)) return '';
+  return parsed.toISOString().slice(0, 10);
+}
 const catalog = { province: [], city: [], district: [], village: [] };
 const catalogById = { province: new Map(), city: new Map(), district: new Map(), village: new Map() };
 const childrenByParent = { city: new Map(), district: new Map(), village: new Map() };
@@ -335,6 +354,134 @@ function renderTable(items, config) {
   loadMore.hidden = matchingItems.length <= visibleItems.length;
 }
 
+function comparisonPeriodKeys(type, value) {
+  const now = new Date();
+  if (type === 'month') {
+    const match = String(value || '').match(/^(\d{4})-(\d{2})$/);
+    const year = match ? Number(match[1]) : now.getFullYear();
+    const month = match ? Number(match[2]) : now.getMonth() + 1;
+    const selected = new Date(Date.UTC(year, month - 1, 1));
+    const previous = new Date(Date.UTC(year, month - 2, 1));
+    const key = (date) => `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+    return { currentKey: key(selected), previousKey: key(previous), type };
+  }
+  if (type === 'year') {
+    const year = /^\d{4}$/.test(String(value)) ? Number(value) : now.getFullYear();
+    return { currentKey: String(year), previousKey: String(year - 1), type };
+  }
+  const currentKey = parseRegistrationDate(value) || localISODate();
+  const date = new Date(`${currentKey}T00:00:00Z`);
+  const previous = new Date(date.getTime() - 86400000).toISOString().slice(0, 10);
+  return { currentKey, previousKey: previous, type: 'day' };
+}
+
+function comparisonPeriodLabel(key, type) {
+  if (type === 'year') return key;
+  if (type === 'month') {
+    const [year, month] = key.split('-').map(Number);
+    return new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, 1)));
+  }
+  const [year, month, day] = key.split('-').map(Number);
+  return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, month - 1, day)));
+}
+
+function comparisonKeyForDate(value, type) {
+  const date = parseRegistrationDate(value);
+  if (!date) return '';
+  return type === 'year' ? date.slice(0, 4) : type === 'month' ? date.slice(0, 7) : date;
+}
+
+function comparisonAreaLevel() {
+  const selected = selectedLevel();
+  if (!selected) return 'province';
+  return hierarchy[Math.min(hierarchy.indexOf(selected) + 1, hierarchy.length - 1)];
+}
+
+function signedCount(value) {
+  if (value > 0) return `+${formatNumber(value)}`;
+  if (value < 0) return `−${formatNumber(Math.abs(value))}`;
+  return '0';
+}
+
+function growthRate(previous, current) {
+  if (!previous) return current ? 'Baru' : '0%';
+  return formatPercent(((current - previous) / previous) * 100);
+}
+
+function renderComparison() {
+  const type = $('#comparisonGranularity').value || 'day';
+  $('#comparisonDayWrap').hidden = type !== 'day';
+  $('#comparisonMonthWrap').hidden = type !== 'month';
+  $('#comparisonYearWrap').hidden = type !== 'year';
+  const selectedValue = type === 'month' ? $('#comparisonMonth').value : type === 'year' ? $('#comparisonYear').value : $('#comparisonDay').value;
+  const periods = comparisonPeriodKeys(type, selectedValue);
+  const previousLabel = comparisonPeriodLabel(periods.previousKey, type);
+  const currentLabel = comparisonPeriodLabel(periods.currentKey, type);
+  $('#comparisonPreviousLabel').textContent = `Sebelumnya • ${previousLabel}`;
+  $('#comparisonCurrentLabel').textContent = `Terpilih • ${currentLabel}`;
+  $('#comparisonPeriodCaption').textContent = `Membandingkan ${previousLabel} dengan ${currentLabel}`;
+
+  const filters = currentFilters();
+  const level = comparisonAreaLevel();
+  const locations = new Map();
+  let previousTotal = 0;
+  let currentTotal = 0;
+  state.records.forEach((record) => {
+    const registeredAt = parseRegistrationDate(record.registeredAt);
+    if (!registeredAt) return;
+    const regionIds = record.regionIds || resolveImportedAreas(record);
+    if (!hierarchy.every((filterLevel) => !filters[filterLevel] || regionIds[filterLevel] === filters[filterLevel])) return;
+    const periodKey = comparisonKeyForDate(registeredAt, type);
+    if (periodKey !== periods.previousKey && periodKey !== periods.currentKey) return;
+    const count = Number(record.count ?? 1);
+    if (!Number.isFinite(count) || count <= 0) return;
+    if (periodKey === periods.previousKey) previousTotal += count;
+    if (periodKey === periods.currentKey) currentTotal += count;
+    const locationId = regionIds[level];
+    if (!locationId) return;
+    if (!locations.has(locationId)) locations.set(locationId, { previous: 0, current: 0 });
+    const totals = locations.get(locationId);
+    if (periodKey === periods.previousKey) totals.previous += count;
+    if (periodKey === periods.currentKey) totals.current += count;
+  });
+
+  const delta = currentTotal - previousTotal;
+  $('#comparisonPreviousCount').textContent = formatNumber(previousTotal);
+  $('#comparisonCurrentCount').textContent = formatNumber(currentTotal);
+  $('#comparisonDeltaCount').textContent = signedCount(delta);
+  $('#comparisonGrowthPercent').textContent = growthRate(previousTotal, currentTotal);
+  $('#comparisonDeltaCount').classList.toggle('growth-positive', delta > 0);
+  $('#comparisonDeltaCount').classList.toggle('growth-negative', delta < 0);
+  $('#comparisonGrowthPercent').classList.toggle('growth-positive', delta > 0);
+  $('#comparisonGrowthPercent').classList.toggle('growth-negative', delta < 0);
+
+  const levelLabel = fields[level].label;
+  $('#comparisonLocationTitle').textContent = `Pertumbuhan per ${levelLabel.toLocaleLowerCase('id')}`;
+  $('#comparisonLevelLabel').textContent = levelLabel.toLocaleUpperCase('id');
+  const rows = [...locations.entries()].map(([id, totals]) => ({
+    id,
+    name: regionName(level, id),
+    previous: totals.previous,
+    current: totals.current,
+    delta: totals.current - totals.previous,
+  })).filter((item) => item.previous || item.current)
+    .sort((a, b) => b.delta - a.delta || b.current - a.current || a.name.localeCompare(b.name, 'id'))
+    .slice(0, 8);
+  const growthRows = rows.filter((item) => item.delta > 0).length;
+  $('#comparisonLocationNote').textContent = growthRows
+    ? `${formatNumber(growthRows)} lokasi pada daftar ini mengalami peningkatan.`
+    : 'Belum ada peningkatan pada lokasi di periode ini.';
+  $('#comparisonRows').innerHTML = rows.length ? rows.map((item) => {
+    const deltaClass = item.delta > 0 ? 'growth-positive' : item.delta < 0 ? 'growth-negative' : '';
+    return `<tr><td>${escapeHtml(item.name)}</td><td>${formatNumber(item.previous)}</td><td>${formatNumber(item.current)}</td><td class="${deltaClass}">${signedCount(item.delta)}</td><td class="${deltaClass}">${growthRate(item.previous, item.current)}</td></tr>`;
+  }).join('') : '<tr><td class="comparison-empty" colspan="5">Belum ada data bertanggal untuk dua periode ini.</td></tr>';
+
+  const undated = state.records.reduce((total, record) => total + (parseRegistrationDate(record.registeredAt) ? 0 : Math.max(0, Number(record.count ?? 1) || 0)), 0);
+  $('#comparisonDataNote').textContent = undated
+    ? `${formatNumber(undated)} data santri belum memiliki tanggal daftar sehingga tidak dihitung. Gunakan tombol Ubah di menu Data santri untuk melengkapi tanggal lama.`
+    : 'Perbandingan dihitung dari tanggal daftar dan mengikuti filter wilayah aktif.';
+}
+
 function render() {
   updateFilterOptions();
   const config = breakdownConfig();
@@ -344,6 +491,7 @@ function render() {
   renderChart(items, config);
   renderHierarchy();
   renderTable(items, config);
+  renderComparison();
   $('#recordCountLabel').textContent = state.isImported ? `${formatNumber(state.records.length)} baris santri dimuat` : `${formatNumber(catalog.province.length)} provinsi • master wilayah nasional`;
   $('#modePill').innerHTML = `<span></span> ${state.isImported ? 'DATA IMPOR' : 'MASTER WILAYAH'}`;
   $('#tableModeLabel').textContent = state.isImported ? 'Data santri dari file • tersimpan sementara di perangkat' : 'Master wilayah Indonesia • jumlah santri belum tersedia';
@@ -478,13 +626,16 @@ function normalizeImportedRow(source) {
   const id = valueFor('ID Santri');
   const name = valueFor('Nama Santri', 'Nama Lengkap Santri', 'Nama Lengkap', 'Nama');
   const gender = valueFor('Jenis Kelamin', 'Gender');
+  const registeredAtValue = valueFor('Tanggal Daftar', 'Tanggal Pendaftaran', 'Tgl Daftar');
+  const registeredAt = parseRegistrationDate(registeredAtValue);
   const countValue = normalizeText(source['Jumlah Santri'] ?? source['jumlah_santri'] ?? '');
   const countText = /^\d{1,3}([.,]\d{3})+$/.test(countValue) ? countValue.replace(/[.,]/g, '') : countValue.replace(',', '.');
   const parsedCount = countText ? Number(countText) : null;
   const countInvalid = Boolean(countValue) && (!Number.isFinite(parsedCount) || parsedCount < 0);
   const count = !countValue ? (id ? 1 : 0) : countInvalid ? 0 : parsedCount;
   return {
-    id, name, gender, province, city, district, village,
+    id, name, gender, province, city, district, village, registeredAt,
+    registeredAtInvalid: Boolean(registeredAtValue) && !registeredAt,
     villageType: valueFor('Jenis Wilayah'),
     count,
     countInvalid,
@@ -582,12 +733,12 @@ function renderStudentRows() {
   const query = normalizeText($('#studentSearch').value).toLocaleLowerCase('id');
   const records = state.records.map((record, index) => ({ record, index })).filter(({ record }) => {
     if (!query) return true;
-    return [record.id, record.name, record.gender, record.province, record.city, record.district, record.village]
+    return [record.id, record.name, record.gender, record.registeredAt, record.province, record.city, record.district, record.village]
       .some((value) => normalizeText(value).toLocaleLowerCase('id').includes(query));
   });
   $('#studentTotal').textContent = formatNumber(state.records.length);
   if (!records.length) {
-    body.innerHTML = `<tr><td class="student-empty" colspan="5">${query ? 'Data santri yang cocok tidak ditemukan.' : 'Belum ada data santri. Tambahkan data secara manual atau impor file.'}</td></tr>`;
+    body.innerHTML = `<tr><td class="student-empty" colspan="6">${query ? 'Data santri yang cocok tidak ditemukan.' : 'Belum ada data santri. Tambahkan data secara manual atau impor file.'}</td></tr>`;
     return;
   }
   body.innerHTML = records.map(({ record, index }) => {
@@ -595,8 +746,11 @@ function renderStudentRows() {
     const identity = normalizeText(record.id) || 'Tanpa ID';
     const region = [record.village, record.district, record.city, record.province].filter(Boolean).join(', ') || 'Wilayah belum tercatat';
     const amount = Number(record.count ?? 1);
-    return `<tr><td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(identity)}</small></td><td>${escapeHtml(record.gender || '—')}</td><td>${escapeHtml(region)}</td><td>${formatNumber(amount)}</td><td><button class="student-delete" type="button" data-delete-student="${index}" aria-label="Hapus data ${escapeHtml(name)}">Hapus</button></td></tr>`;
+    const registeredAt = parseRegistrationDate(record.registeredAt);
+    const registeredAtLabel = registeredAt ? comparisonPeriodLabel(registeredAt, 'day') : 'Belum tercatat';
+    return `<tr><td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(identity)}</small></td><td>${escapeHtml(record.gender || '—')}</td><td>${escapeHtml(region)}</td><td><span>${escapeHtml(registeredAtLabel)}</span><button class="student-edit" type="button" data-edit-student-date="${index}">Ubah tanggal</button></td><td>${formatNumber(amount)}</td><td><button class="student-delete" type="button" data-delete-student="${index}" aria-label="Hapus data ${escapeHtml(name)}">Hapus</button></td></tr>`;
   }).join('');
+  body.querySelectorAll('[data-edit-student-date]').forEach((button) => button.addEventListener('click', () => editStudentDate(Number(button.dataset.editStudentDate), button)));
   body.querySelectorAll('[data-delete-student]').forEach((button) => button.addEventListener('click', () => {
     const index = Number(button.dataset.deleteStudent);
     const record = state.records[index];
@@ -609,6 +763,36 @@ function renderStudentRows() {
     renderStudentRows();
     toast(saved ? 'Data santri berhasil dihapus.' : 'Data dihapus, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
   }));
+}
+
+function editStudentDate(index, button) {
+  const record = state.records[index];
+  if (!record) return;
+  const cell = button.closest('td');
+  const input = document.createElement('input');
+  input.type = 'date';
+  input.className = 'student-date-input';
+  input.value = parseRegistrationDate(record.registeredAt);
+  input.setAttribute('aria-label', `Tanggal daftar ${record.name || record.id || 'santri'}`);
+  const saveButton = document.createElement('button');
+  saveButton.type = 'button';
+  saveButton.className = 'student-edit';
+  saveButton.textContent = 'Simpan';
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.className = 'student-delete';
+  cancelButton.textContent = 'Batal';
+  cell.replaceChildren(input, saveButton, cancelButton);
+  input.focus();
+  cancelButton.addEventListener('click', renderStudentRows);
+  saveButton.addEventListener('click', () => {
+    if (!input.value) { toast('Pilih tanggal daftar terlebih dahulu.', true); input.focus(); return; }
+    record.registeredAt = parseRegistrationDate(input.value);
+    const saved = saveStudentRecords();
+    render();
+    renderStudentRows();
+    toast(saved ? 'Tanggal daftar berhasil diperbarui.' : 'Tanggal diperbarui, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
+  });
 }
 
 function updateStudentLocationOptions() {
@@ -665,6 +849,7 @@ function addStudent(event) {
     city: getAreaName('city', '#studentCity'),
     district: getAreaName('district', '#studentDistrict'),
     village: getAreaName('village', '#studentVillage'),
+    registeredAt: parseRegistrationDate($('#studentRegisteredAt').value),
     villageType: '',
     count: 1,
     countInvalid: false,
@@ -677,6 +862,7 @@ function addStudent(event) {
   renderStudentRows();
   $('#studentFormPanel').hidden = true;
   $('#studentFormPanel').reset();
+  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
   toast(saved ? 'Data santri berhasil ditambahkan.' : 'Data ditambahkan, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
@@ -690,7 +876,7 @@ async function importStudentFile(file) {
     const issues = [];
     const requiredFields = [
       ['id', 'ID Santri'], ['name', 'Nama lengkap'], ['province', 'Provinsi'],
-      ['city', 'Kabupaten/Kota'], ['district', 'Kecamatan'], ['village', 'Desa/Kelurahan'],
+      ['city', 'Kabupaten/Kota'], ['district', 'Kecamatan'], ['village', 'Desa/Kelurahan'], ['registeredAt', 'Tanggal daftar'],
     ];
 
     sourceRows.forEach((source, index) => {
@@ -698,7 +884,10 @@ async function importStudentFile(file) {
       const rowNumber = source.__rowNumber || index + 2;
       if (![record.id, record.name, record.gender, record.province, record.city, record.district, record.village].some(Boolean)) return;
       const rowIssues = [];
-      requiredFields.forEach(([key, label]) => { if (!record[key]) rowIssues.push(`${label} kosong`); });
+      requiredFields.forEach(([key, label]) => {
+        if (!record[key] && !(key === 'registeredAt' && record.registeredAtInvalid)) rowIssues.push(`${label} kosong`);
+      });
+      if (record.registeredAtInvalid) rowIssues.push('Tanggal daftar tidak valid');
       const normalizedId = record.id.toLocaleLowerCase('id');
       if (normalizedId && existingIds.has(normalizedId)) rowIssues.push(`ID ${record.id} sudah terdaftar atau berulang`);
 
@@ -780,6 +969,10 @@ function setToday() {
   const now = new Date();
   $('#todayLabel').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }).format(now);
   $('#yearLabel').textContent = now.getFullYear();
+  $('#studentRegisteredAt').value = localISODate(now);
+  $('#comparisonDay').value = localISODate(now);
+  $('#comparisonMonth').value = localISODate(now).slice(0, 7);
+  $('#comparisonYear').value = now.getFullYear();
 }
 
 function openModal() { $('#modalBackdrop').hidden = false; $('#modalDone').focus(); }
@@ -818,18 +1011,27 @@ $('#closeStudentButton').addEventListener('click', closeStudentManager);
 $('#studentBackdrop').addEventListener('click', (event) => { if (event.target === $('#studentBackdrop')) closeStudentManager(); });
 $('#showStudentFormButton').addEventListener('click', () => {
   $('#studentFormPanel').hidden = false;
+  $('#studentFormTitle').textContent = 'Tambah data santri';
+  $('#studentSubmitButton').textContent = 'Simpan data';
+  $('#studentFormPanel').reset();
+  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
   $('#studentId').focus();
 });
 $('#cancelStudentFormButton').addEventListener('click', () => {
   $('#studentFormPanel').hidden = true;
   $('#studentFormPanel').reset();
+  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
 });
 $('#studentFormPanel').addEventListener('submit', addStudent);
 $('#studentSearch').addEventListener('input', renderStudentRows);
 $('#importStudentsButton').addEventListener('click', () => $('#studentFileInput').click());
 $('#studentFileInput').addEventListener('change', (event) => { if (event.target.files?.[0]) importStudentFile(event.target.files[0]); });
+$('#comparisonGranularity').addEventListener('change', renderComparison);
+$('#comparisonDay').addEventListener('change', renderComparison);
+$('#comparisonMonth').addEventListener('change', renderComparison);
+$('#comparisonYear').addEventListener('input', renderComparison);
 $('#studentProvince').addEventListener('change', () => {
   $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
   updateStudentLocationOptions();
@@ -855,6 +1057,7 @@ try {
       state.records = parsed.filter((record) => record && typeof record === 'object').map((record) => ({
         id: normalizeText(record.id), name: normalizeText(record.name), gender: normalizeText(record.gender),
         province: normalizeText(record.province), city: normalizeText(record.city), district: normalizeText(record.district), village: normalizeText(record.village),
+        registeredAt: parseRegistrationDate(record.registeredAt),
         villageType: normalizeText(record.villageType), count: Number.isFinite(Number(record.count)) && Number(record.count) >= 0 ? Number(record.count) : 0,
         countInvalid: false,
       }));
