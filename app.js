@@ -392,9 +392,20 @@ function comparisonKeyForDate(value, type) {
 }
 
 function comparisonAreaLevel() {
-  const selected = selectedLevel();
-  if (!selected) return 'province';
-  return hierarchy[Math.min(hierarchy.indexOf(selected) + 1, hierarchy.length - 1)];
+  const selected = $('#comparisonLocationLevel').value;
+  return hierarchy.includes(selected) ? selected : 'province';
+}
+
+function comparisonLocationParent(level, id) {
+  const area = catalogById[level].get(id);
+  if (!area) return '';
+  const parentIds = {
+    province: [],
+    city: [['province', area.provinceId]],
+    district: [['city', area.cityId], ['province', area.provinceId]],
+    village: [['district', area.districtId], ['city', area.cityId], ['province', area.provinceId]],
+  }[level] || [];
+  return parentIds.map(([parentLevel, parentId]) => regionName(parentLevel, parentId)).filter(Boolean).join(' • ');
 }
 
 function signedCount(value) {
@@ -461,6 +472,7 @@ function renderComparison() {
   const rows = [...locations.entries()].map(([id, totals]) => ({
     id,
     name: regionName(level, id),
+    parent: comparisonLocationParent(level, id),
     previous: totals.previous,
     current: totals.current,
     delta: totals.current - totals.previous,
@@ -473,7 +485,8 @@ function renderComparison() {
     : 'Belum ada peningkatan pada lokasi di periode ini.';
   $('#comparisonRows').innerHTML = rows.length ? rows.map((item) => {
     const deltaClass = item.delta > 0 ? 'growth-positive' : item.delta < 0 ? 'growth-negative' : '';
-    return `<tr><td>${escapeHtml(item.name)}</td><td>${formatNumber(item.previous)}</td><td>${formatNumber(item.current)}</td><td class="${deltaClass}">${signedCount(item.delta)}</td><td class="${deltaClass}">${growthRate(item.previous, item.current)}</td></tr>`;
+    const parent = item.parent ? `<small>${escapeHtml(item.parent)}</small>` : '';
+    return `<tr><td><strong>${escapeHtml(item.name)}</strong>${parent}</td><td>${formatNumber(item.previous)}</td><td>${formatNumber(item.current)}</td><td class="${deltaClass}">${signedCount(item.delta)}</td><td class="${deltaClass}">${growthRate(item.previous, item.current)}</td></tr>`;
   }).join('') : '<tr><td class="comparison-empty" colspan="5">Belum ada data bertanggal untuk dua periode ini.</td></tr>';
 
   const undated = state.records.reduce((total, record) => total + (parseRegistrationDate(record.registeredAt) ? 0 : Math.max(0, Number(record.count ?? 1) || 0)), 0);
@@ -1010,6 +1023,7 @@ $('#studentSearch').addEventListener('input', renderStudentRows);
 $('#importStudentsButton').addEventListener('click', () => $('#studentFileInput').click());
 $('#studentFileInput').addEventListener('change', (event) => { if (event.target.files?.[0]) importStudentFile(event.target.files[0]); });
 $('#comparisonGranularity').addEventListener('change', renderComparison);
+$('#comparisonLocationLevel').addEventListener('change', renderComparison);
 $('#comparisonDay').addEventListener('change', renderComparison);
 $('#comparisonMonth').addEventListener('change', renderComparison);
 $('#comparisonYear').addEventListener('input', renderComparison);

@@ -11,7 +11,7 @@ Dashboard lokal untuk melihat jumlah santri berdasarkan provinsi, kabupaten/kota
 
 Template Data Santri memiliki kolom ID Santri, Nama Lengkap, Jenis Kelamin, Provinsi, Kabupaten/Kota, Kecamatan, dan Desa/Kelurahan. Isi satu santri per baris. ID, nama, dan semua kolom wilayah wajib diisi; jenis kelamin opsional. Impor menambahkan baris valid, melewati ID ganda atau wilayah yang tidak cocok, lalu menampilkan baris yang perlu diperbaiki. Tanggal pendaftaran dicatat otomatis saat santri ditambahkan atau file diunggah. Jika file impor memiliki kolom `Tanggal Daftar`, tanggal tersebut tetap dapat digunakan untuk data historis.
 
-Grafik perbandingan pendaftaran membandingkan hari terpilih dengan hari sebelumnya, bulan terpilih dengan bulan sebelumnya, atau tahun terpilih dengan tahun sebelumnya. Data lama yang dibuat sebelum sistem mencatat tanggal pendaftaran tidak dimasukkan karena waktunya tidak tersimpan. Jika data lama memang didaftarkan hari ini, pilih **Catat hari ini** pada baris santri tersebut.
+Grafik perbandingan pendaftaran membandingkan hari terpilih dengan hari sebelumnya, bulan terpilih dengan bulan sebelumnya, atau tahun terpilih dengan tahun sebelumnya. Tingkat lokasi dapat dipilih dari provinsi, kabupaten/kota, kecamatan, atau desa/kelurahan; filter wilayah dashboard tetap membatasi hasil. Data lama yang dibuat sebelum sistem mencatat tanggal pendaftaran tidak dimasukkan karena waktunya tidak tersimpan. Jika data lama memang didaftarkan hari ini, pilih **Catat hari ini** pada baris santri tersebut.
 
 Master wilayah disertakan di dalam folder, sehingga filter dan chart tetap bisa dipakai tanpa koneksi API. Data manual dan file santri yang diimpor disimpan di browser pada perangkat ini dan tidak diunggah ke server.
 
