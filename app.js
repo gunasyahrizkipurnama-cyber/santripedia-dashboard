@@ -8,6 +8,7 @@ const fields = {
 const hierarchy = ['province', 'city', 'district', 'village'];
 const pieColors = ['#23845f', '#45a97b', '#8bc69a', '#d1a14d', '#6c91c4', '#9579b8', '#d17868', '#42a2a0', '#a9b64b', '#d08daf'];
 const state = { records: [], isImported: false, chartExpanded: false, toastTimer: null, search: '', tableLimit: 100, totalStudents: 0 };
+const studentStorageKey = 'for-santri-student-records-v1';
 const $ = (selector) => document.querySelector(selector);
 const formatNumber = (value) => Number(value || 0).toLocaleString('id-ID');
 const normalizeText = (value) => String(value ?? '').trim();
@@ -470,13 +471,15 @@ function normalizeImportedRow(source) {
   const district = valueFor('Kecamatan');
   const village = valueFor('Desa/Kelurahan', 'Desa / Kelurahan');
   const id = valueFor('ID Santri');
+  const name = valueFor('Nama Santri', 'Nama Lengkap Santri', 'Nama Lengkap', 'Nama');
+  const gender = valueFor('Jenis Kelamin', 'Gender');
   const countValue = normalizeText(source['Jumlah Santri'] ?? source['jumlah_santri'] ?? '');
   const countText = /^\d{1,3}([.,]\d{3})+$/.test(countValue) ? countValue.replace(/[.,]/g, '') : countValue.replace(',', '.');
   const parsedCount = countText ? Number(countText) : null;
   const countInvalid = Boolean(countValue) && (!Number.isFinite(parsedCount) || parsedCount < 0);
   const count = !countValue ? (id ? 1 : 0) : countInvalid ? 0 : parsedCount;
   return {
-    id, province, city, district, village,
+    id, name, gender, province, city, district, village,
     villageType: valueFor('Jenis Wilayah'),
     count,
     countInvalid,
@@ -533,6 +536,7 @@ async function importFile(file) {
     const duplicates = ids.length - new Set(ids).size;
     state.records = imported;
     state.isImported = true;
+    const persisted = saveStudentRecords();
     state.chartExpanded = false;
     state.search = '';
     state.tableLimit = 100;
@@ -543,6 +547,7 @@ async function importFile(file) {
     if (unresolvedArea) notes.push(`${formatNumber(unresolvedArea)} baris wilayah tidak cocok dengan master data`);
     if (cleanedCounts) notes.push(`${formatNumber(cleanedCounts)} nilai jumlah bermasalah dibersihkan menjadi 0`);
     if (duplicates) notes.push(`${formatNumber(duplicates)} ID ganda, periksa agar jumlah tidak berlebih`);
+    if (!persisted) notes.push('browser tidak dapat menyimpan data setelah halaman ditutup');
     toast(`${formatNumber(imported.length)} baris santri dimuat${notes.length ? `. Catatan: ${notes.join('; ')}.` : ` dari ${file.name}.`}`);
   } catch (error) {
     console.error(error);
@@ -555,6 +560,119 @@ async function importFile(file) {
 function csvEscape(value) {
   const text = String(value ?? '');
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+function saveStudentRecords() {
+  try {
+    localStorage.setItem(studentStorageKey, JSON.stringify(state.records));
+    return true;
+  } catch (error) {
+    console.warn('Penyimpanan lokal tidak tersedia.', error);
+    return false;
+  }
+}
+
+function renderStudentRows() {
+  const body = $('#studentRows');
+  const query = normalizeText($('#studentSearch').value).toLocaleLowerCase('id');
+  const records = state.records.map((record, index) => ({ record, index })).filter(({ record }) => {
+    if (!query) return true;
+    return [record.id, record.name, record.gender, record.province, record.city, record.district, record.village]
+      .some((value) => normalizeText(value).toLocaleLowerCase('id').includes(query));
+  });
+  $('#studentTotal').textContent = formatNumber(state.records.length);
+  if (!records.length) {
+    body.innerHTML = `<tr><td class="student-empty" colspan="5">${query ? 'Data santri yang cocok tidak ditemukan.' : 'Belum ada data santri. Tambahkan data secara manual atau impor file.'}</td></tr>`;
+    return;
+  }
+  body.innerHTML = records.map(({ record, index }) => {
+    const name = normalizeText(record.name) || 'Nama belum tercatat';
+    const identity = normalizeText(record.id) || 'Tanpa ID';
+    const region = [record.village, record.district, record.city, record.province].filter(Boolean).join(', ') || 'Wilayah belum tercatat';
+    const amount = Number(record.count ?? 1);
+    return `<tr><td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(identity)}</small></td><td>${escapeHtml(record.gender || '—')}</td><td>${escapeHtml(region)}</td><td>${formatNumber(amount)}</td><td><button class="student-delete" type="button" data-delete-student="${index}" aria-label="Hapus data ${escapeHtml(name)}">Hapus</button></td></tr>`;
+  }).join('');
+  body.querySelectorAll('[data-delete-student]').forEach((button) => button.addEventListener('click', () => {
+    const index = Number(button.dataset.deleteStudent);
+    const record = state.records[index];
+    if (!record || !window.confirm(`Hapus data santri ${record.name || record.id || 'ini'}?`)) return;
+    state.records.splice(index, 1);
+    state.isImported = state.records.length > 0;
+    applyImportedRecords(state.records);
+    const saved = saveStudentRecords();
+    render();
+    renderStudentRows();
+    toast(saved ? 'Data santri berhasil dihapus.' : 'Data dihapus, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
+  }));
+}
+
+function updateStudentLocationOptions() {
+  const province = $('#studentProvince');
+  if (!province) return;
+  updateSelect(province, 'Pilih Provinsi', catalog.province, province.value);
+  const city = $('#studentCity');
+  updateSelect(city, 'Pilih Kab/Kota', province.value ? childrenByParent.city.get(province.value) || [] : [], city.value, !province.value);
+  const district = $('#studentDistrict');
+  updateSelect(district, 'Pilih Kecamatan', city.value ? childrenByParent.district.get(city.value) || [] : [], district.value, !city.value);
+  const village = $('#studentVillage');
+  updateSelect(village, 'Pilih Desa/Kelurahan', district.value ? childrenByParent.village.get(district.value) || [] : [], village.value, !district.value);
+}
+
+function openStudentManager() {
+  $('#studentBackdrop').hidden = false;
+  $('#studentFormPanel').hidden = true;
+  $('#studentSearch').value = '';
+  renderStudentRows();
+  updateStudentLocationOptions();
+  $('#studentNav').classList.add('active');
+  $('#studentNav').setAttribute('aria-current', 'page');
+  const dashboardNav = document.querySelector('.main-nav .nav-item[href="#dashboard"]');
+  dashboardNav?.classList.remove('active');
+  dashboardNav?.removeAttribute('aria-current');
+  $('#closeStudentButton').focus();
+}
+
+function closeStudentManager() {
+  $('#studentBackdrop').hidden = true;
+  $('#studentNav').classList.remove('active');
+  $('#studentNav').removeAttribute('aria-current');
+  const dashboardNav = document.querySelector('.main-nav .nav-item[href="#dashboard"]');
+  dashboardNav?.classList.add('active');
+  dashboardNav?.setAttribute('aria-current', 'page');
+  document.querySelector('#importButton')?.focus();
+}
+
+function addStudent(event) {
+  event.preventDefault();
+  const id = normalizeText($('#studentId').value);
+  if (state.records.some((record) => normalizeText(record.id).toLocaleLowerCase('id') === id.toLocaleLowerCase('id'))) {
+    toast('ID santri sudah terdaftar. Gunakan ID yang berbeda.', true);
+    $('#studentId').focus();
+    return;
+  }
+  const getAreaName = (level, selectId) => catalogById[level].get($(selectId).value)?.name || '';
+  const record = {
+    id,
+    name: normalizeText($('#studentName').value),
+    gender: $('#studentGender').value,
+    province: getAreaName('province', '#studentProvince'),
+    city: getAreaName('city', '#studentCity'),
+    district: getAreaName('district', '#studentDistrict'),
+    village: getAreaName('village', '#studentVillage'),
+    villageType: '',
+    count: 1,
+    countInvalid: false,
+  };
+  state.records.push(record);
+  state.isImported = true;
+  applyImportedRecords(state.records);
+  const saved = saveStudentRecords();
+  render();
+  renderStudentRows();
+  $('#studentFormPanel').hidden = true;
+  $('#studentForm').reset();
+  updateStudentLocationOptions();
+  toast(saved ? 'Data santri berhasil ditambahkan.' : 'Data ditambahkan, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
 
 function exportSummary() {
@@ -605,12 +723,64 @@ $('#aboutLink').addEventListener('click', openModal);
 $('#modalClose').addEventListener('click', closeModal);
 $('#modalDone').addEventListener('click', closeModal);
 $('#modalBackdrop').addEventListener('click', (event) => { if (event.target === $('#modalBackdrop')) closeModal(); });
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (!$('#studentBackdrop').hidden) closeStudentManager();
+  else closeModal();
+});
 document.querySelectorAll('[data-soon]').forEach((button) => button.addEventListener('click', () => toast(`${button.dataset.soon} akan terhubung pada tahap pengembangan berikutnya.`)));
+$('#studentNav').addEventListener('click', openStudentManager);
+document.querySelector('.main-nav .nav-item[href="#dashboard"]').addEventListener('click', closeStudentManager);
+$('#closeStudentButton').addEventListener('click', closeStudentManager);
+$('#studentBackdrop').addEventListener('click', (event) => { if (event.target === $('#studentBackdrop')) closeStudentManager(); });
+$('#showStudentFormButton').addEventListener('click', () => {
+  $('#studentFormPanel').hidden = false;
+  updateStudentLocationOptions();
+  $('#studentId').focus();
+});
+$('#cancelStudentFormButton').addEventListener('click', () => {
+  $('#studentFormPanel').hidden = true;
+  $('#studentForm').reset();
+  updateStudentLocationOptions();
+});
+$('#studentForm').addEventListener('submit', addStudent);
+$('#studentSearch').addEventListener('input', renderStudentRows);
+$('#studentProvince').addEventListener('change', () => {
+  $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
+  updateStudentLocationOptions();
+});
+$('#studentCity').addEventListener('change', () => {
+  $('#studentDistrict').value = ''; $('#studentVillage').value = '';
+  updateStudentLocationOptions();
+});
+$('#studentDistrict').addEventListener('change', () => {
+  $('#studentVillage').value = '';
+  updateStudentLocationOptions();
+});
 $('#mobileMenu').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
 document.addEventListener('click', (event) => {
   if (window.innerWidth <= 680 && $('#sidebar').classList.contains('open') && !$('#sidebar').contains(event.target) && !$('#mobileMenu').contains(event.target)) $('#sidebar').classList.remove('open');
 });
 
+try {
+  const saved = localStorage.getItem(studentStorageKey);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (Array.isArray(parsed)) {
+      state.records = parsed.filter((record) => record && typeof record === 'object').map((record) => ({
+        id: normalizeText(record.id), name: normalizeText(record.name), gender: normalizeText(record.gender),
+        province: normalizeText(record.province), city: normalizeText(record.city), district: normalizeText(record.district), village: normalizeText(record.village),
+        villageType: normalizeText(record.villageType), count: Number.isFinite(Number(record.count)) && Number(record.count) >= 0 ? Number(record.count) : 0,
+        countInvalid: false,
+      }));
+    }
+  }
+} catch (error) {
+  console.warn('Data lokal sebelumnya tidak dapat dibaca.', error);
+}
+state.isImported = state.records.length > 0;
+applyImportedRecords(state.records);
 setToday();
+renderStudentRows();
 render();
+
