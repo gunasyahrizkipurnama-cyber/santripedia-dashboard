@@ -7,9 +7,9 @@ Dashboard lokal untuk melihat jumlah santri berdasarkan provinsi, kabupaten/kota
 1. Ekstrak folder `santripedia-dashboard` dari arsip ZIP.
 2. Buka `index.html` di Safari atau browser modern.
 3. Pilih provinsi, lalu pilih kabupaten/kota, kecamatan, dan desa/kelurahan untuk mempersempit filter.
-4. Gunakan **Impor data** untuk memuat file Excel template atau CSV.
+4. Buka menu **Data santri** untuk menambahkan, mencari, atau menghapus santri. Gunakan **Impor data** untuk memuat file Excel template atau CSV.
 
-Master wilayah disertakan di dalam folder, sehingga filter dan chart tetap bisa dipakai tanpa koneksi API. File santri yang diimpor dibaca di browser dan tidak diunggah ke server; datanya hanya tersimpan selama halaman terbuka.
+Master wilayah disertakan di dalam folder, sehingga filter dan chart tetap bisa dipakai tanpa koneksi API. Data manual dan file santri yang diimpor disimpan di browser pada perangkat ini dan tidak diunggah ke server.
 
 ## Master wilayah
 
@@ -34,4 +34,5 @@ Template Excel tersedia sebagai `Template_Impor_Data_Awal_SANTRIPEDIA.xlsx`.
 
 ## Batasan prototipe
 
-Impor data hanya untuk pratinjau lokal dan tidak tersimpan setelah halaman ditutup. Dashboard ini belum memiliki login, basis data bersama, sinkronisasi aplikasi collector, maupun layanan server.
+Data manual dan hasil impor disimpan di penyimpanan lokal browser pada perangkat ini, sehingga tetap tersedia setelah halaman ditutup di browser dan folder yang sama. Data tidak tersinkron ke laptop atau browser lain. Dashboard ini belum memiliki login, basis data bersama, sinkronisasi aplikasi collector, maupun layanan server.
+
