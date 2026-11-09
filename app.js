@@ -478,10 +478,9 @@ function renderComparison() {
 
   const undated = state.records.reduce((total, record) => total + (parseRegistrationDate(record.registeredAt) ? 0 : Math.max(0, Number(record.count ?? 1) || 0)), 0);
   $('#comparisonDataNote').textContent = undated
-    ? `${formatNumber(undated)} data santri belum memiliki tanggal daftar, jadi belum masuk perbandingan. Lengkapi tanggalnya agar pertumbuhan tercatat.`
-    : 'Perbandingan dihitung dari tanggal daftar dan mengikuti filter wilayah aktif.';
+    ? `${formatNumber(undated)} data lama belum memiliki waktu pendaftaran tersimpan, jadi belum masuk perbandingan. Untuk data yang memang didaftarkan hari ini, pilih Catat hari ini di menu Data santri.`
+    : 'Tanggal pendaftaran dicatat otomatis dan hasil mengikuti filter wilayah aktif.';
   $('#comparisonDataBanner').classList.toggle('warning', undated > 0);
-  $('#openStudentManagerFromComparison').hidden = undated === 0;
 }
 
 function render() {
@@ -637,7 +636,6 @@ function normalizeImportedRow(source) {
   const count = !countValue ? (id ? 1 : 0) : countInvalid ? 0 : parsedCount;
   return {
     id, name, gender, province, city, district, village, registeredAt,
-    registeredAtInvalid: Boolean(registeredAtValue) && !registeredAt,
     villageType: valueFor('Jenis Wilayah'),
     count,
     countInvalid,
@@ -750,9 +748,12 @@ function renderStudentRows() {
     const amount = Number(record.count ?? 1);
     const registeredAt = parseRegistrationDate(record.registeredAt);
     const registeredAtLabel = registeredAt ? comparisonPeriodLabel(registeredAt, 'day') : 'Belum tercatat';
-    return `<tr><td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(identity)}</small></td><td>${escapeHtml(record.gender || '—')}</td><td>${escapeHtml(region)}</td><td><span>${escapeHtml(registeredAtLabel)}</span><button class="student-edit" type="button" data-edit-student-date="${index}">Ubah tanggal</button></td><td>${formatNumber(amount)}</td><td><button class="student-delete" type="button" data-delete-student="${index}" aria-label="Hapus data ${escapeHtml(name)}">Hapus</button></td></tr>`;
+    const dateCell = registeredAt
+      ? escapeHtml(registeredAtLabel)
+      : `Belum tercatat <button class="student-stamp-date" type="button" data-stamp-student-date="${index}" title="Catat hari ini jika santri ini memang didaftarkan hari ini">Catat hari ini</button>`;
+    return `<tr><td><strong>${escapeHtml(name)}</strong><small>${escapeHtml(identity)}</small></td><td>${escapeHtml(record.gender || '—')}</td><td>${escapeHtml(region)}</td><td>${dateCell}</td><td>${formatNumber(amount)}</td><td><button class="student-delete" type="button" data-delete-student="${index}" aria-label="Hapus data ${escapeHtml(name)}">Hapus</button></td></tr>`;
   }).join('');
-  body.querySelectorAll('[data-edit-student-date]').forEach((button) => button.addEventListener('click', () => editStudentDate(Number(button.dataset.editStudentDate), button)));
+  body.querySelectorAll('[data-stamp-student-date]').forEach((button) => button.addEventListener('click', () => stampStudentDateToday(Number(button.dataset.stampStudentDate))));
   body.querySelectorAll('[data-delete-student]').forEach((button) => button.addEventListener('click', () => {
     const index = Number(button.dataset.deleteStudent);
     const record = state.records[index];
@@ -767,34 +768,15 @@ function renderStudentRows() {
   }));
 }
 
-function editStudentDate(index, button) {
+function stampStudentDateToday(index) {
   const record = state.records[index];
-  if (!record) return;
-  const cell = button.closest('td');
-  const input = document.createElement('input');
-  input.type = 'date';
-  input.className = 'student-date-input';
-  input.value = parseRegistrationDate(record.registeredAt);
-  input.setAttribute('aria-label', `Tanggal daftar ${record.name || record.id || 'santri'}`);
-  const saveButton = document.createElement('button');
-  saveButton.type = 'button';
-  saveButton.className = 'student-edit';
-  saveButton.textContent = 'Simpan';
-  const cancelButton = document.createElement('button');
-  cancelButton.type = 'button';
-  cancelButton.className = 'student-delete';
-  cancelButton.textContent = 'Batal';
-  cell.replaceChildren(input, saveButton, cancelButton);
-  input.focus();
-  cancelButton.addEventListener('click', renderStudentRows);
-  saveButton.addEventListener('click', () => {
-    if (!input.value) { toast('Pilih tanggal daftar terlebih dahulu.', true); input.focus(); return; }
-    record.registeredAt = parseRegistrationDate(input.value);
-    const saved = saveStudentRecords();
-    render();
-    renderStudentRows();
-    toast(saved ? 'Tanggal daftar berhasil diperbarui.' : 'Tanggal diperbarui, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
-  });
+  if (!record || parseRegistrationDate(record.registeredAt)) return;
+  if (!window.confirm(`Catat tanggal hari ini untuk ${record.name || record.id || 'santri ini'}? Pilih hanya jika santri memang didaftarkan hari ini.`)) return;
+  record.registeredAt = localISODate();
+  const saved = saveStudentRecords();
+  render();
+  renderStudentRows();
+  toast(saved ? 'Tanggal pendaftaran hari ini berhasil dicatat.' : 'Tanggal diperbarui, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
 
 function updateStudentLocationOptions() {
@@ -851,7 +833,7 @@ function addStudent(event) {
     city: getAreaName('city', '#studentCity'),
     district: getAreaName('district', '#studentDistrict'),
     village: getAreaName('village', '#studentVillage'),
-    registeredAt: parseRegistrationDate($('#studentRegisteredAt').value),
+    registeredAt: localISODate(),
     villageType: '',
     count: 1,
     countInvalid: false,
@@ -864,7 +846,6 @@ function addStudent(event) {
   renderStudentRows();
   $('#studentFormPanel').hidden = true;
   $('#studentFormPanel').reset();
-  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
   toast(saved ? 'Data santri berhasil ditambahkan.' : 'Data ditambahkan, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
@@ -876,9 +857,11 @@ async function importStudentFile(file) {
     const existingIds = new Set(state.records.map((record) => normalizeText(record.id).toLocaleLowerCase('id')).filter(Boolean));
     const accepted = [];
     const issues = [];
+    const uploadDate = localISODate();
+    let assignedUploadDate = 0;
     const requiredFields = [
       ['id', 'ID Santri'], ['name', 'Nama lengkap'], ['province', 'Provinsi'],
-      ['city', 'Kabupaten/Kota'], ['district', 'Kecamatan'], ['village', 'Desa/Kelurahan'], ['registeredAt', 'Tanggal daftar'],
+      ['city', 'Kabupaten/Kota'], ['district', 'Kecamatan'], ['village', 'Desa/Kelurahan'],
     ];
 
     sourceRows.forEach((source, index) => {
@@ -886,10 +869,7 @@ async function importStudentFile(file) {
       const rowNumber = source.__rowNumber || index + 2;
       if (![record.id, record.name, record.gender, record.province, record.city, record.district, record.village].some(Boolean)) return;
       const rowIssues = [];
-      requiredFields.forEach(([key, label]) => {
-        if (!record[key] && !(key === 'registeredAt' && record.registeredAtInvalid)) rowIssues.push(`${label} kosong`);
-      });
-      if (record.registeredAtInvalid) rowIssues.push('Tanggal daftar tidak valid');
+      requiredFields.forEach(([key, label]) => { if (!record[key]) rowIssues.push(`${label} kosong`); });
       const normalizedId = record.id.toLocaleLowerCase('id');
       if (normalizedId && existingIds.has(normalizedId)) rowIssues.push(`ID ${record.id} sudah terdaftar atau berulang`);
 
@@ -919,6 +899,7 @@ async function importStudentFile(file) {
       record.villageType = '';
       record.count = 1;
       record.countInvalid = false;
+      if (!record.registeredAt) { record.registeredAt = uploadDate; assignedUploadDate += 1; }
       accepted.push(record);
       existingIds.add(normalizedId);
     });
@@ -936,7 +917,8 @@ async function importStudentFile(file) {
     $('#studentSearch').value = '';
     render();
     renderStudentRows();
-    toast(`${formatNumber(accepted.length)} data santri berhasil ditambahkan${saved ? '.' : ', tetapi belum tersimpan setelah halaman ditutup.'}`, !saved);
+    const dateNote = assignedUploadDate ? ` ${formatNumber(assignedUploadDate)} baris memakai tanggal unggah.` : '';
+    toast(`${formatNumber(accepted.length)} data santri berhasil ditambahkan.${dateNote}${saved ? '' : ' Belum tersimpan setelah halaman ditutup.'}`, !saved);
     if (issues.length) {
       const detail = issues.slice(0, 10).join('\n');
       window.alert(`Impor selesai. ${accepted.length} santri ditambahkan; ${issues.length} baris dilewati.\n\n${detail}${issues.length > 10 ? `\n…dan ${issues.length - 10} baris lainnya.` : ''}`);
@@ -971,7 +953,6 @@ function setToday() {
   const now = new Date();
   $('#todayLabel').textContent = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' }).format(now);
   $('#yearLabel').textContent = now.getFullYear();
-  $('#studentRegisteredAt').value = localISODate(now);
   $('#comparisonDay').value = localISODate(now);
   $('#comparisonMonth').value = localISODate(now).slice(0, 7);
   $('#comparisonYear').value = now.getFullYear();
@@ -1016,14 +997,12 @@ $('#showStudentFormButton').addEventListener('click', () => {
   $('#studentFormTitle').textContent = 'Tambah data santri';
   $('#studentSubmitButton').textContent = 'Simpan data';
   $('#studentFormPanel').reset();
-  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
   $('#studentId').focus();
 });
 $('#cancelStudentFormButton').addEventListener('click', () => {
   $('#studentFormPanel').hidden = true;
   $('#studentFormPanel').reset();
-  $('#studentRegisteredAt').value = localISODate();
   updateStudentLocationOptions();
 });
 $('#studentFormPanel').addEventListener('submit', addStudent);
@@ -1034,7 +1013,6 @@ $('#comparisonGranularity').addEventListener('change', renderComparison);
 $('#comparisonDay').addEventListener('change', renderComparison);
 $('#comparisonMonth').addEventListener('change', renderComparison);
 $('#comparisonYear').addEventListener('input', renderComparison);
-$('#openStudentManagerFromComparison').addEventListener('click', openStudentManager);
 $('#studentProvince').addEventListener('change', () => {
   $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
   updateStudentLocationOptions();

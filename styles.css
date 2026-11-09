@@ -152,8 +152,6 @@ h1 span { color: #16866a; }
 .comparison-control[hidden] { display: none; }
 .comparison-data-banner { min-height: 31px; margin: 0 0 10px; padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 6px; color: #688074; background: #f5f9f6; font-size: 8px; line-height: 1.5; }
 .comparison-data-banner.warning { color: #7a673d; background: #fff9ec; }
-.comparison-data-action { flex: 0 0 auto; border: 0; padding: 3px 0; color: #397b60; background: none; font: 700 8px 'DM Sans', sans-serif; cursor: pointer; }
-.comparison-data-action[hidden] { display: none; }
 .comparison-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
 .comparison-metric { min-height: 63px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; border: 1px solid #e9efeb; border-radius: 7px; background: #fbfdfc; }
 .comparison-metric span { color: #8e9b93; font-size: 8px; }
@@ -295,10 +293,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .student-table td:first-child small { margin-top: 3px; color: var(--muted); font-size: 9px; }
 .student-table .student-delete { padding: 5px 8px; border: 1px solid #f1dedd; border-radius: 5px; color: #b04c48; background: #fff; font: 600 10px 'DM Sans', sans-serif; cursor: pointer; }
 .student-table .student-delete:hover { background: #fff5f4; }
-.student-table .student-edit { padding: 5px 8px; border: 1px solid #e3ebe6; border-radius: 5px; color: #4e7664; background: #fff; font: 600 10px 'DM Sans', sans-serif; cursor: pointer; }
-.student-table .student-edit:hover { background: #f2f8f5; }
-.student-row-actions { display: flex; justify-content: flex-end; gap: 5px; }
-.student-date-input { display: block; max-width: 140px; height: 29px; margin-bottom: 4px; padding: 0 6px; border: 1px solid #dce9e2; border-radius: 5px; color: #496055; font: 10px 'DM Sans', sans-serif; }
+.student-table .student-stamp-date { margin-left: 5px; padding: 3px 5px; border: 1px solid #e1ece6; border-radius: 4px; color: #43765f; background: #f8fbf9; font: 600 8px 'DM Sans', sans-serif; cursor: pointer; }
+.student-table .student-stamp-date:hover { background: #edf6f1; }
 .student-empty { padding: 28px 12px; color: var(--muted); text-align: center; }
 .student-storage-note { display: flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--muted); font-size: 10px; }
 .student-storage-note .icon { width: 13px; height: 13px; color: #76a993; flex: 0 0 auto; }
