@@ -18,14 +18,15 @@ const childrenByParent = { city: new Map(), district: new Map(), village: new Ma
 const studentCounts = { province: new Map(), city: new Map(), district: new Map(), village: new Map() };
 const sourceData = window.WILAYAH_DATA;
 if (!sourceData) throw new Error('Data wilayah tidak ditemukan. Pastikan data/wilayah-data.js ikut disertakan.');
-sourceData.provinces.forEach(([id, name]) => catalog.province.push({ id, name, provinceId: id }));
-const citiesById = new Map(sourceData.regencies.map(([id, provinceId, name]) => [id, { id, name, provinceId }]));
-const districtsById = new Map(sourceData.districts.map(([id, cityId, name]) => [id, { id, name, cityId, provinceId: citiesById.get(cityId)?.provinceId || '' }]));
+sourceData.provinces.forEach(([id, name]) => catalog.province.push({ id: String(id), name, provinceId: String(id) }));
+const citiesById = new Map(sourceData.regencies.map(([id, provinceId, name]) => [String(id), { id: String(id), name, provinceId: String(provinceId) }]));
+const districtsById = new Map(sourceData.districts.map(([id, cityId, name]) => [String(id), { id: String(id), name, cityId: String(cityId), provinceId: citiesById.get(String(cityId))?.provinceId || '' }]));
 catalog.city = [...citiesById.values()];
 catalog.district = [...districtsById.values()];
 catalog.village = sourceData.villages.map(([id, districtId, name]) => {
-  const district = districtsById.get(districtId);
-  return { id, name, districtId, cityId: district?.cityId || '', provinceId: district?.provinceId || '' };
+  const normalizedDistrictId = String(districtId);
+  const district = districtsById.get(normalizedDistrictId);
+  return { id: String(id), name, districtId: normalizedDistrictId, cityId: district?.cityId || '', provinceId: district?.provinceId || '' };
 });
 hierarchy.forEach((level) => catalog[level].forEach((area) => catalogById[level].set(area.id, area)));
 catalog.city.forEach((area) => { if (!childrenByParent.city.has(area.provinceId)) childrenByParent.city.set(area.provinceId, []); childrenByParent.city.get(area.provinceId).push(area); });
@@ -115,9 +116,10 @@ function sumSelectedStudents(filters = currentFilters()) {
 
 function updateSelect(select, placeholder, areas, selected, disabled = false) {
   select.replaceChildren(new Option(placeholder, ''));
-  areas.forEach((area) => select.add(new Option(area.name, area.id)));
+  areas.forEach((area) => select.add(new Option(area.name, String(area.id))));
   select.disabled = disabled;
-  select.value = areas.some((area) => area.id === selected) ? selected : '';
+  const selectedValue = String(selected ?? '');
+  select.value = areas.some((area) => String(area.id) === selectedValue) ? selectedValue : '';
 }
 
 function updateFilterOptions() {
@@ -609,7 +611,8 @@ function renderStudentRows() {
 function updateStudentLocationOptions() {
   const province = $('#studentProvince');
   if (!province) return;
-  updateSelect(province, 'Pilih Provinsi', catalog.province, province.value);
+  if (province.options.length <= 1) updateSelect(province, 'Pilih Provinsi', catalog.province, province.value);
+  province.disabled = false;
   const city = $('#studentCity');
   updateSelect(city, 'Pilih Kab/Kota', province.value ? childrenByParent.city.get(province.value) || [] : [], city.value, !province.value);
   const district = $('#studentDistrict');
