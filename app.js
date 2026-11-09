@@ -673,7 +673,7 @@ function addStudent(event) {
   render();
   renderStudentRows();
   $('#studentFormPanel').hidden = true;
-  $('#studentForm').reset();
+  $('#studentFormPanel').reset();
   updateStudentLocationOptions();
   toast(saved ? 'Data santri berhasil ditambahkan.' : 'Data ditambahkan, tetapi browser tidak dapat menyimpannya untuk sesi berikutnya.', !saved);
 }
@@ -743,10 +743,10 @@ $('#showStudentFormButton').addEventListener('click', () => {
 });
 $('#cancelStudentFormButton').addEventListener('click', () => {
   $('#studentFormPanel').hidden = true;
-  $('#studentForm').reset();
+  $('#studentFormPanel').reset();
   updateStudentLocationOptions();
 });
-$('#studentForm').addEventListener('submit', addStudent);
+$('#studentFormPanel').addEventListener('submit', addStudent);
 $('#studentSearch').addEventListener('input', renderStudentRows);
 $('#studentProvince').addEventListener('change', () => {
   $('#studentCity').value = ''; $('#studentDistrict').value = ''; $('#studentVillage').value = '';
